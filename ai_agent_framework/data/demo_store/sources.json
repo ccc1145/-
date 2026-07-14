@@ -1,0 +1,10 @@
+{
+  "D:\\code\\企业实训\\ai_agent_framework\\examples\\sample_docs\\rag_intro.md": {
+    "chunks": 4,
+    "type": ".md"
+  },
+  "D:\\code\\企业实训\\ai_agent_framework\\examples\\sample_docs\\usage.txt": {
+    "chunks": 6,
+    "type": ".txt"
+  }
+}

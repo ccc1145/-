@@ -1,0 +1,13 @@
+langchain-core>=0.3
+langchain-openai>=0.2
+langchain-text-splitters>=0.3
+langchain-community>=0.3
+chromadb>=0.5
+fastapi>=0.115
+uvicorn[standard]>=0.30
+pypdf>=4.0
+rank-bm25>=0.2.2
+pydantic>=2.7
+pydantic-settings>=2.3
+pyyaml>=6.0
+python-dotenv>=1.0

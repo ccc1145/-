@@ -1,0 +1,26 @@
+框架使用说明
+
+一、安装依赖
+在项目根目录执行：pip install -e . （开发模式）或 pip install -r requirements.txt
+
+二、配置
+编辑 config.yaml，填写 LLM 与 Embedding 的 api_key、base_url、model。
+也可通过环境变量覆盖，前缀 AAF_，嵌套用双下划线，例如：
+  AAF_LLM__MODEL=deepseek-chat
+  AAF_LLM__API_KEY=sk-xxx
+
+三、摄入文档
+python -m ai_agent_framework.api.cli ingest examples/sample_docs/
+
+四、提问
+python -m ai_agent_framework.api.cli ask "什么是 RAG？"
+
+五、启动 API
+python -m ai_agent_framework.api.cli serve
+然后访问 http://localhost:8000/docs 查看 Swagger 文档。
+
+六、扩展
+新增工具：继承 ai_agent_framework.tools.Tool，实现 run()，注册到 ToolRegistry。
+新增加载器：继承 DocumentLoader，实现 load()，加入 AutoLoader 的 _LOADER_MAP。
+新增检索器：实现 retrieve(query, top_k) 接口，在 get_retriever 工厂中注册。
+插件：在 plugins/ 目录放置 .py，模块内定义 Tool 实例或 register(registry) 函数。

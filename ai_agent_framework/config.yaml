@@ -1,0 +1,58 @@
+# 通用 AI Agent 框架默认配置
+# 所有配置项均可被环境变量覆盖，环境变量前缀为 AAF_，嵌套用双下划线，如 AAF_LLM__MODEL
+
+llm:
+  provider: openai  # openai(兼容接口) | 待扩展: anthropic / zhipu / deepseek 均走 openai 兼容
+  model: deepseek-chat
+  api_key: ${DEEPSEEK_API_KEY}
+  base_url: https://api.deepseek.com/v1
+  temperature: 0.3
+  max_tokens: 2048
+
+embedding:
+  provider: openai
+  model: embedding-3
+  api_key: ${ZHIPUAI_API_KEY}
+  base_url: https://open.bigmodel.cn/api/paas/v4
+  # 维度（embedding-3 支持 256/512/1024/2048）
+  dimensions: 1024
+
+vectorstore:
+  type: chroma
+  path: ./data/vectorstore
+  collection: default
+
+rag:
+  splitter:
+    type: recursive  # recursive | character | token
+    chunk_size: 500
+    chunk_overlap: 50
+    separators: ["\n\n", "\n", "。", ".", " ", ""]
+  retrieval:
+    strategy: hybrid  # vector | hybrid
+    top_k: 4
+    # 混合检索权重（向量分数权重，BM25 权重 = 1 - 该值）
+    vector_weight: 0.6
+    # 供 BM25 候选池大小
+    candidate_k: 20
+
+agent:
+  # 是否在无检索结果时仍调用 LLM
+  answer_when_no_context: true
+  max_tool_calls: 3
+
+knowledge:
+  # 允许摄入的根目录白名单（相对 cwd 或绝对路径）；为空时仅允许相对路径
+  allowed_roots:
+    - ./examples
+    - ./docs
+
+api:
+  host: 0.0.0.0
+  port: 8000
+  # API Key 鉴权（为空则不鉴权，仅适合本地开发；生产务必设置）
+  api_key: ""
+
+plugins:
+  enabled: true
+  path: ./plugins
