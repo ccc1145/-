@@ -1,0 +1,44 @@
+{# 场景叙事模板：根据 GameState + 玩家操作，生成这一轮的叙事文本。 #}
+【游戏状态】
+玩家：{{ game_state.player.name }}
+修为：{{ game_state.player.cultivation }}（{{ game_state.player.realm.major }}{{ game_state.player.realm.minor }}层）
+灵根：{{ game_state.player.spirit_root.type }}（品质 {{ game_state.player.spirit_root.quality }}）
+
+【玩家操作】
+{% if player_input.type == "choice" -%}
+玩家选择了：{{ player_input.choice_text }}
+{% elif player_input.type == "free_input" -%}
+玩家输入："{{ player_input.text }}"
+{% endif %}
+
+【需要表达的状态变化】
+{% for change in event_context.triggered_effects -%}
+- {{ change.target }}: {{ change.value }}
+{% else -%}
+（本轮无状态变化）
+{% endfor %}
+
+【最近发生的事件】
+{% for event in memory.recent_events -%}
+- 第{{ event.turn }}轮：{{ event.narrative[:50] }}...
+{% else -%}
+（游戏刚开始，暂无历史事件）
+{% endfor %}
+
+请生成本轮叙事，要求：
+1. 自然融入上述状态变化，不要让玩家感觉"突然跳数值"。
+2. 如果有 NPC 出场，对话必须符合其性格和当前好感度。
+3. 如果好感度变化了，通过 NPC 的态度微妙变化体现。
+4. 提供 2-4 个下一步可选操作。
+
+输出格式（严格 JSON，不要附加多余文字，不要放在代码块里）：
+{
+  "narrative": "完整的叙事文本",
+  "narrative_segments": [
+    {"type": "narration", "text": "旁白片段"},
+    {"type": "dialogue", "speaker": "NPC名", "text": "NPC台词"}
+  ],
+  "available_choices": [
+    {"id": "choice_id", "text": "选项文字"}
+  ]
+}
