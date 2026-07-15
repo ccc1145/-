@@ -29,15 +29,30 @@ from llm_adapter import NarrativeLLMAdapter  # noqa: E402
 from narrative_controller import NarrativeController  # noqa: E402
 
 
-# ---- Mock 数据 ----
+# ---- Mock 数据（对齐 docs/gamestate-schema.md v1.0，由人员B锁定）----
 MOCK_GAME_STATE = {
+    "session_id": "day5-test-001",
+    "turn_count": 1,
     "player": {
         "name": "李逍遥",
-        "cultivation": 10,
-        "realm": {"major": "练气", "minor": 1},
-        "spirit_root": {"type": "火", "quality": 7},
-        "attributes": {"strength": 5, "agility": 6, "intelligence": 7, "perception": 6},
-    }
+        "gender": "男",
+        "spiritual_root": "火灵根",       # v1.0: string（旧版是 {type, quality}）
+        "cultivation": 10,                 # 修为值
+        "cultivation_exp": 0,              # 修为经验
+        "hp": 100, "max_hp": 100,
+        "mp": 50, "max_mp": 50,
+        "spirit_stones": 0,
+        "inventory": [],
+        "skills": [],
+    },
+    "world": {
+        "current_scene_id": "trial_grounds",   # v1.0: 场景 ID 走 world
+        "flags": {},
+        "npc_affinity": {"master": 5},           # v1.0: 好感度走 world
+    },
+    "narrative": "",
+    "available_choices": [],
+    "recent_events": [],
 }
 
 MOCK_SCENE = {
@@ -57,7 +72,7 @@ MOCK_NPC_CARDS = {
             "dislikes": ["浮夸", "不敬师长"],
             "speaking_style": "言简意赅，偶尔带文言",
         },
-        "current_affinity": 5,
+        "current_affinity": 5,   # 与 game_state.world.npc_affinity["master"] 一致
     }
 }
 

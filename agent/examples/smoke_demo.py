@@ -65,30 +65,52 @@ def _build_llm_config(use_real: bool) -> LLMConfig:
     )
 
 
-# ---- Mock 数据（结构对齐策划书 4.1 GameState 与 4.3 Agent 输入）----
+# ---- Mock 数据（对齐 docs/gamestate-schema.md v1.0，由人员B锁定）----
+# GameState 严格按 v1.0 Schema；scene/npc_cards 的详细信息作为独立上下文传入
+# （backend 根据 world.current_scene_id 查 content/ 得到，再传给 Agent）
 MOCK_GAME_STATE = {
+    "session_id": "smoke-test-001",
+    "turn_count": 1,
     "player": {
         "name": "李逍遥",
-        "cultivation": 0,
-        "realm": {"major": "练气", "minor": 1},
-        "spirit_root": {"type": "火", "quality": 7},
-    }
+        "gender": "男",
+        "spiritual_root": "火灵根",       # v1.0: string（旧版是 {type, quality}）
+        "cultivation": 0,                  # 修为值
+        "cultivation_exp": 0,              # 修为经验
+        "hp": 100, "max_hp": 100,
+        "mp": 50, "max_mp": 50,
+        "spirit_stones": 0,
+        "inventory": [],
+        "skills": [],
+    },
+    "world": {
+        "current_scene_id": "trial_grounds",   # v1.0: 场景 ID 走 world
+        "flags": {},
+        "npc_affinity": {"master": 0},           # v1.0: 好感度走 world
+    },
+    "narrative": "",
+    "available_choices": [],
+    "recent_events": [],
 }
 
+# 场景详细信息（backend 根据 world.current_scene_id 查 content/ 得到）
 MOCK_SCENE = {
+    "id": "trial_grounds",
     "name": "试炼场",
     "description": "试炼场中央立着一块三尺高的测灵石，散发着淡淡的青光",
     "mood": "庄严、期待、一丝紧张",
 }
 
+# NPC 角色卡详细信息（backend 根据 npc_affinity 的 key 查 content/ 得到）
 MOCK_NPC_CARDS = {
     "master": {
+        "id": "master",
         "name": "玄清真人",
         "personality": {
             "traits": ["严厉", "护短", "重规矩"],
             "speaking_style": "言简意赅，喜欢用古语训诫弟子",
         },
-        "current_affinity": 0,
+        "current_affinity": 0,   # 与 game_state.world.npc_affinity["master"] 一致
     }
 }
 

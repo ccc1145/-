@@ -1,8 +1,36 @@
-{# 场景叙事模板：根据 GameState + 玩家操作，生成这一轮的叙事文本。 #}
-【游戏状态】
-玩家：{{ game_state.player.name }}
-修为：{{ game_state.player.cultivation }}（{{ game_state.player.realm.major }}{{ game_state.player.realm.minor }}层）
-灵根：{{ game_state.player.spirit_root.type }}（品质 {{ game_state.player.spirit_root.quality }}）
+{# 场景叙事模板：根据 GameState v1.0 + 玩家操作，生成这一轮的叙事文本。
+   GameState 字段对齐 docs/gamestate-schema.md v1.0（由人员B锁定）。 #}
+【游戏状态】（GameState v1.0）
+玩家：{{ game_state.player.name }}（{{ game_state.player.gender }}）
+灵根：{{ game_state.player.spiritual_root }}
+修为：{{ game_state.player.cultivation }}（经验 {{ game_state.player.cultivation_exp }}）
+气血：{{ game_state.player.hp }}/{{ game_state.player.max_hp }}
+法力：{{ game_state.player.mp }}/{{ game_state.player.max_mp }}
+灵石：{{ game_state.player.spirit_stones }}
+{% if game_state.player.inventory %}
+随身物品：
+{% for item in game_state.player.inventory -%}
+- {{ item.name }} ×{{ item.count }}
+{% endfor %}
+{% endif %}
+{% if game_state.player.skills %}
+已学功法：{{ game_state.player.skills | join("、") }}
+{% endif %}
+
+【世界状态】
+当前场景：{{ game_state.world.current_scene_id }}
+{% if game_state.world.flags %}
+剧情标记：
+{% for flag, value in game_state.world.flags.items() -%}
+- {{ flag }}: {{ value }}
+{% endfor %}
+{% endif %}
+{% if game_state.world.npc_affinity %}
+NPC 好感度：
+{% for npc_id, affinity in game_state.world.npc_affinity.items() -%}
+- {{ npc_id }}: {{ affinity }}
+{% endfor %}
+{% endif %}
 
 【玩家操作】
 {% if player_input.type == "choice" -%}
