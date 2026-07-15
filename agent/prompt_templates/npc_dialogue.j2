@@ -1,0 +1,43 @@
+{# NPC 对话模板：基于角色卡 + 玩家输入，生成该 NPC 的个性化回应。 #}
+【对话上下文】
+场景：{{ current_scene.name }}
+玩家输入："{{ player_input.text }}"
+
+【NPC 角色卡】
+姓名：{{ npc.name }}
+性格：{{ npc.personality.traits | join("、") }}
+{% if "values" in npc.personality and npc.personality["values"] %}
+价值观：{{ npc.personality["values"] | join("、") }}
+{% endif %}
+{% if "dislikes" in npc.personality and npc.personality["dislikes"] %}
+厌恶：{{ npc.personality["dislikes"] | join("、") }}
+{% endif %}
+说话风格：{{ npc.personality.speaking_style }}
+
+【当前关系状态】
+好感度：{{ npc.current_affinity }}
+关系等级：{% if npc.current_affinity > 30 %}亲近{% elif npc.current_affinity > 0 %}友善{% elif npc.current_affinity > -30 %}冷淡{% else %}厌恶{% endif %}
+
+【对话历史】
+{% for line in dialogue_history -%}
+- {{ line }}
+{% else -%}
+（初次对话，无历史）
+{% endfor %}
+
+请生成该 NPC 的回应，要求：
+1. 严格符合角色性格和说话风格，不要 OOC（脱离角色）。
+2. 好感度不同，态度必须明显不同：
+   - 亲近（>30）：耐心教导，流露关怀，可透露更多信息。
+   - 友善（1-30）：客气礼貌，回答中肯。
+   - 冷淡（-29-0）：言简意赅，可能敷衍或转移话题。
+   - 厌恶（<-30）：训斥、拒绝、甚至赶人。
+3. 不要说现代网络用语，保持古风修仙语感。
+4. 回应控制在 30-100 字，不要长篇大论。
+
+输出格式（严格 JSON，不要附加多余文字，不要放在代码块里）：
+{
+  "response": "NPC 的回应文本",
+  "emotion": "当前情绪（如：满意、不悦、平静）",
+  "internal_thought": "NPC 的内心想法（调试用，不展示给玩家）"
+}
