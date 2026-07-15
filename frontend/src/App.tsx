@@ -1,80 +1,73 @@
+import { gameApi } from './api/client'
+import { ChoicePanel } from './components/ChoicePanel'
+import { DebugPanel } from './components/DebugPanel'
+import { ErrorNotice } from './components/ErrorNotice'
+import { FreeInputBox } from './components/FreeInputBox'
+import { GameHeader } from './components/GameHeader'
+import { StartGamePanel } from './components/StartGamePanel'
+import { StatusPanel } from './components/StatusPanel'
+import { TextDisplay } from './components/TextDisplay'
+import { useGameStore } from './stores/gameStore'
+
 function App() {
+  const gameState = useGameStore((state) => state.gameState)
+  const narrativeSegments = useGameStore((state) => state.narrativeSegments)
+  const availableChoices = useGameStore((state) => state.availableChoices)
+  const freeInputEnabled = useGameStore((state) => state.freeInputEnabled)
+  const isLoading = useGameStore((state) => state.isLoading)
+  const error = useGameStore((state) => state.error)
+  const gameOver = useGameStore((state) => state.gameOver)
+  const agentThought = useGameStore((state) => state.agentThought)
+  const debugVisible = useGameStore((state) => state.debugVisible)
+  const startGame = useGameStore((state) => state.startGame)
+  const chooseAction = useGameStore((state) => state.chooseAction)
+  const sendFreeInput = useGameStore((state) => state.sendFreeInput)
+  const restartGame = useGameStore((state) => state.restartGame)
+  const clearError = useGameStore((state) => state.clearError)
+  const toggleDebug = useGameStore((state) => state.toggleDebug)
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
-      <header className="border-b border-slate-700 bg-slate-900 px-6 py-4">
-        <h1 className="text-center text-2xl font-bold">
-          修仙模拟器
-        </h1>
-      </header>
+    <div className="app-shell min-h-screen text-stone-100">
+      <div className="mountain-layer" aria-hidden="true" />
+      <div className="mist mist-one" aria-hidden="true" />
+      <div className="mist mist-two" aria-hidden="true" />
 
-      <main className="mx-auto grid max-w-7xl grid-cols-1 gap-4 p-4 lg:grid-cols-[1fr_300px]">
-        <section className="flex min-h-[700px] flex-col gap-4">
-          <div className="flex-1 rounded-lg border border-slate-700 bg-slate-900 p-6">
-            <h2 className="mb-4 text-lg font-semibold">剧情</h2>
+      <GameHeader
+        isMockMode={gameApi.isMockMode}
+        hasSession={Boolean(gameState)}
+        onRestart={restartGame}
+        onToggleDebug={toggleDebug}
+      />
 
-            <p className="leading-8 text-slate-300">
-              你从昏迷中醒来，发现自己身处一座云雾缭绕的山谷。
-              远处传来悠扬的钟声，似乎有一座修仙宗门隐藏在群山之间。
-            </p>
-          </div>
+      {error && <ErrorNotice message={error} onClose={clearError} />}
 
-          <div className="rounded-lg border border-slate-700 bg-slate-900 p-4">
-            <h2 className="mb-3 font-semibold">请选择你的行动</h2>
-
-            <div className="grid gap-2">
-              <button className="rounded bg-slate-700 px-4 py-3 text-left hover:bg-slate-600">
-                1. 顺着钟声寻找宗门
-              </button>
-
-              <button className="rounded bg-slate-700 px-4 py-3 text-left hover:bg-slate-600">
-                2. 留在原地观察环境
-              </button>
-            </div>
-          </div>
-
-          <div className="flex gap-2 rounded-lg border border-slate-700 bg-slate-900 p-4">
-            <input
-              className="flex-1 rounded border border-slate-600 bg-slate-800 px-4 py-2 outline-none focus:border-slate-400"
-              placeholder="输入你想做的事情……"
+      {!gameState ? (
+        <StartGamePanel isLoading={isLoading} onStart={startGame} />
+      ) : (
+        <main className="relative z-10 mx-auto grid max-w-[1500px] grid-cols-1 gap-4 px-4 py-5 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-5 lg:px-6 lg:py-6">
+          <div className="min-w-0 space-y-4">
+            <TextDisplay
+              segments={narrativeSegments}
+              isLoading={isLoading}
+              gameOver={gameOver}
             />
-
-            <button className="rounded bg-emerald-700 px-6 py-2 hover:bg-emerald-600">
-              发送
-            </button>
+            <ChoicePanel
+              choices={availableChoices}
+              disabled={isLoading}
+              gameOver={gameOver}
+              onChoose={chooseAction}
+            />
+            <FreeInputBox
+              disabled={isLoading || gameOver}
+              enabled={freeInputEnabled}
+              onSend={sendFreeInput}
+            />
+            {debugVisible && <DebugPanel state={gameState} thought={agentThought} />}
           </div>
-        </section>
 
-        <aside className="rounded-lg border border-slate-700 bg-slate-900 p-5">
-          <h2 className="mb-5 text-lg font-semibold">角色状态</h2>
-
-          <div className="space-y-4 text-sm">
-            <p>
-              <span className="text-slate-400">姓名：</span>
-              无名
-            </p>
-
-            <p>
-              <span className="text-slate-400">境界：</span>
-              凡人
-            </p>
-
-            <p>
-              <span className="text-slate-400">修为：</span>
-              0 / 100
-            </p>
-
-            <p>
-              <span className="text-slate-400">灵根：</span>
-              尚未检测
-            </p>
-
-            <p>
-              <span className="text-slate-400">生命：</span>
-              100 / 100
-            </p>
-          </div>
-        </aside>
-      </main>
+          <StatusPanel state={gameState} />
+        </main>
+      )}
     </div>
   )
 }

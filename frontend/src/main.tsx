@@ -1,9 +1,15 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import App from './App'
 import './index.css'
-import App from './App.tsx'
 
-createRoot(document.getElementById('root')!).render(
+const rootElement = document.getElementById('root')
+
+if (!rootElement) {
+  throw new Error('找不到 #root 节点')
+}
+
+createRoot(rootElement).render(
   <StrictMode>
     <App />
   </StrictMode>,
