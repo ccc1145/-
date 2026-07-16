@@ -1,0 +1,181 @@
+# 物品配置：通用基础物品
+# 跨宗门通用，包含货币、基础丹药、通用材料
+- item_id: "low_grade_spirit_stone"
+  name: "低品灵石"
+  type: "currency"
+  description: "修仙界通用货币，蕴含少量灵气，可用于修炼或交易。"
+  rarity: "common"
+  stackable: true
+  max_stack: 999
+  effects:
+    - type: "boost_cultivation"
+      target: "player.cultivation"
+      value: 5
+      description: "吸收灵石中的灵气，增加少量修为"
+  price: 10
+
+- item_id: "mid_grade_spirit_stone"
+  name: "中品灵石"
+  type: "currency"
+  description: "品质更高的灵石，蕴含的灵气是低品灵石的十倍以上。"
+  rarity: "uncommon"
+  stackable: true
+  max_stack: 999
+  effects:
+    - type: "boost_cultivation"
+      target: "player.cultivation"
+      value: 50
+      description: "吸收大量灵气，显著增加修为"
+  price: 100
+
+- item_id: "high_grade_spirit_stone"
+  name: "高品灵石"
+  type: "currency"
+  description: "极为稀有的高纯度灵石，一枚便可抵百枚中品灵石，是元婴期以上修士交易的主要通货。"
+  rarity: "rare"
+  stackable: true
+  max_stack: 99
+  effects:
+    - type: "boost_cultivation"
+      target: "player.cultivation"
+      value: 500
+      description: "吸收海量灵气，大幅提升修为"
+  price: 1000
+
+- item_id: "qi_pill"
+  name: "聚气丹"
+  type: "consumable"
+  description: "基础丹药，帮助练气期修士凝聚灵气。九品丹药，毒灵含量极低，是新人修士的标配辅助丹药。"
+  rarity: "common"
+  stackable: true
+  max_stack: 20
+  effects:
+    - type: "boost_cultivation"
+      target: "player.cultivation"
+      value: 20
+      description: "短时间内大幅提升灵气吸收效率"
+  price: 30
+  required_realm:
+    major: "练气"
+    minor: 1
+
+- item_id: "healing_ointment"
+  name: "金疮药膏"
+  type: "consumable"
+  description: "通用外伤药膏，以灵草调配而成，可快速愈合切割伤、挫伤等常见外伤。"
+  rarity: "common"
+  stackable: true
+  max_stack: 10
+  effects:
+    - type: "restore_hp"
+      value: 30
+      description: "恢复少量伤势"
+  price: 20
+
+- item_id: "meditation_incense"
+  name: "静心香"
+  type: "consumable"
+  description: "由灵草精制而成的盘香，点燃后有安神静气之效，可小幅提升修炼效率。各大宗门均有配给。"
+  rarity: "common"
+  stackable: true
+  max_stack: 10
+  effects:
+    - type: "boost_cultivation"
+      target: "player.cultivation"
+      value: 15
+      description: "点燃后修炼效果小幅提升，持续一炷香"
+  price: 25
+
+- item_id: "spirit_tea"
+  name: "灵茶"
+  type: "consumable"
+  description: "以灵植嫩芽炒制的茶叶，泡饮后可清心明目、恢复精神，是修仙者最普遍的饮品。"
+  rarity: "common"
+  stackable: true
+  max_stack: 20
+  effects:
+    - type: "restore_mp"
+      value: 20
+      description: "恢复少量灵力"
+  price: 15
+
+- item_id: "iron_sword"
+  name: "精铁长剑"
+  type: "equipment"
+  description: "由普通精铁锻造的长剑，无灵性加持，但刃口锋利，足够初学者日常训练使用。"
+  rarity: "common"
+  stackable: false
+  effects:
+    - type: "boost_attribute"
+      target: "strength"
+      value: 5
+      description: "略微提升攻击力"
+  price: 50
+
+- item_id: "cloth_robe"
+  name: "粗布法袍"
+  type: "equipment"
+  description: "最基础的法袍，以粗棉布制成，轻便透气，适合初学者日常穿着。"
+  rarity: "common"
+  stackable: false
+  effects:
+    - type: "boost_attribute"
+      target: "defense"
+      value: 2
+      description: "提供最低限度的防护"
+  price: 30
+
+- item_id: "basic_jade_slip"
+  name: "空白玉简"
+  type: "material"
+  description: "未经刻录的空白玉简，可用于记录功法、阵法图或传递信息。各大宗门藏经阁均有供应。"
+  rarity: "common"
+  stackable: true
+  max_stack: 20
+  effects: []
+  price: 20
+
+- item_id: "spirit_wood"
+  name: "灵木枝"
+  type: "material"
+  description: "灵气充沛的树枝，可用于制作符纸基材、低级法器手柄或作为引火材料。"
+  rarity: "common"
+  stackable: true
+  max_stack: 50
+  effects: []
+  price: 5
+
+- item_id: "low_grade_recovery_pill"
+  name: "回气散"
+  type: "consumable"
+  description: "低级回气丹药，可在短时间内加速灵气恢复速度，适合战斗间隙使用。"
+  rarity: "common"
+  stackable: true
+  max_stack: 15
+  effects:
+    - type: "restore_mp"
+      value: 40
+      description: "恢复一定量灵力"
+  price: 35
+
+- item_id: "identity_jade"
+  name: "身份玉牌"
+  type: "key_item"
+  description: "宗门弟子的身份凭证，刻有持牌人的姓名、院系和入门年份。丢失需及时补办。"
+  rarity: "common"
+  stackable: false
+  effects: []
+  price: 0
+
+- item_id: "sect_uniform"
+  name: "宗门制服"
+  type: "equipment"
+  description: "印有宗门标志的制式弟子服，不同宗门的款式和颜色各不相同。"
+  rarity: "common"
+  stackable: false
+  effects:
+    - type: "boost_attribute"
+      target: "affinity_sect"
+      value: 1
+      description: "穿着可增加同门辨识度"
+  price: 0

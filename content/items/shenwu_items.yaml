@@ -1,0 +1,169 @@
+# 物品配置：神武门特色物品
+# 武修宗门——兵器、甲胄、炼体丹药、战场消耗品
+- item_id: "shenwu_armor"
+  name: "玄黑训练甲"
+  type: "equipment"
+  description: "神武门制式训练铠甲，以玄黑石粉混合陨铁锻造而成。沉重坚实，新兵入门后每日着甲训练以淬炼体魄。"
+  rarity: "common"
+  stackable: false
+  effects:
+    - type: "boost_attribute"
+      target: "defense"
+      value: 10
+      description: "提供良好的物理防护"
+  price: 120
+
+- item_id: "iron_training_blade"
+  name: "制式铁刀"
+  type: "equipment"
+  description: "神武门弟子标配训练刀，刀身厚重，无锋刃——不以锋利取巧，专为力量训练和基础刀术练习打造。"
+  rarity: "common"
+  stackable: false
+  effects:
+    - type: "boost_attribute"
+      target: "strength"
+      value: 8
+      description: "提升攻击力"
+  price: 80
+
+- item_id: "baizhan_saber_technique"
+  name: "《百战刀诀》入门篇"
+  type: "skill_book"
+  description: "神武门基础刀法秘籍，传自武祖白禾。招式简洁而凶悍，直取要害，是神武门弟子必修的第一门实战武技。"
+  rarity: "common"
+  stackable: false
+  effects:
+    - type: "learn_skill"
+      target: "shenwu_saber"
+      value: 1
+      description: "习得神武门基础刀法"
+  price: 0
+
+- item_id: "body_tempering_pill"
+  name: "淬体丸"
+  type: "consumable"
+  description: "神武门砺体院配制的炼体丹药，药性刚猛，服后气血翻涌需以功法引导炼化，可强化筋骨体魄。"
+  rarity: "common"
+  stackable: true
+  max_stack: 20
+  effects:
+    - type: "boost_attribute"
+      target: "strength"
+      value: 5
+      description: "永久性小幅提升体魄强度"
+  price: 40
+  required_realm:
+    major: "练气"
+    minor: 1
+
+- item_id: "frenzy_pill"
+  name: "暴气丹"
+  type: "consumable"
+  description: "关键时刻使用的爆发丹药，服后在短时间内大幅提升战力，但药效过后会陷入一段虚弱期。战场上的双刃剑。"
+  rarity: "uncommon"
+  stackable: true
+  max_stack: 5
+  effects:
+    - type: "boost_attribute"
+      target: "strength"
+      value: 30
+      description: "短时大幅提升战力，之后会虚弱"
+  price: 100
+
+- item_id: "sha_qi_resist_incense"
+  name: "煞气定神香"
+  type: "consumable"
+  description: "以龙陨山脉特产的煞气草制成的线香，点燃后可缓解煞气侵蚀造成的经脉刺痛，帮助弟子在煞气池中训练更久。"
+  rarity: "uncommon"
+  stackable: true
+  max_stack: 10
+  effects:
+    - type: "boost_attribute"
+      target: "resistance"
+      value: 20
+      description: "临时提升煞气抗性"
+  price: 70
+
+- item_id: "bone_forging_pill"
+  name: "锻骨丹"
+  type: "consumable"
+  description: "神武门高阶炼体丹药，可淬炼全身骨骼，使骨质如精铁般坚硬。霍岩攒了两年灵石想买的丹药。"
+  rarity: "rare"
+  stackable: true
+  max_stack: 5
+  effects:
+    - type: "boost_attribute"
+      target: "strength"
+      value: 15
+      description: "永久性大幅提升骨骼强度"
+  price: 200
+  required_realm:
+    major: "筑基"
+    minor: 1
+
+- item_id: "heavy_shield"
+  name: "玄铁重盾"
+  type: "equipment"
+  description: "御山军标准配置的防御重盾，以龙陨山脉玄铁铸成，重逾百斤。盾面刻有卸力阵纹，可有效化解钝器冲击。"
+  rarity: "uncommon"
+  stackable: false
+  effects:
+    - type: "boost_attribute"
+      target: "defense"
+      value: 25
+      description: "提供极强的物理防护"
+  price: 300
+
+- item_id: "blood_field_ticket"
+  name: "血战秘境入场券（单次）"
+  type: "consumable"
+  description: "进入血战秘境的凭证。弟子凭此可在特定时间内进入秘境一层，与战意投影厮杀磨炼实战能力。"
+  rarity: "uncommon"
+  stackable: true
+  max_stack: 5
+  effects:
+    - type: "boost_cultivation"
+      target: "player.cultivation"
+      value: 80
+      description: "进入血战秘境历练，战斗可大幅提升实战经验"
+  price: 150
+
+- item_id: "shenbing_token"
+  name: "神兵冢试炼令"
+  type: "key_item"
+  description: "允许进入神兵冢接受器灵考验的令牌。持令者若通过器灵认可，可获得一件与自己灵魂共鸣的神兵。"
+  rarity: "epic"
+  stackable: false
+  effects:
+    - type: "boost_attribute"
+      target: "strength"
+      value: 50
+      description: "通过器灵试炼后可获得强力武器"
+  price: 1000
+
+- item_id: "heavy_ballista_bolt"
+  name: "破甲重弩矢"
+  type: "consumable"
+  description: "破阵军重型神机弩的专用箭矢，以陨铁打造箭头，可洞穿金丹期修士的护体真气和大多数护甲。"
+  rarity: "rare"
+  stackable: true
+  max_stack: 5
+  effects:
+    - type: "boost_attribute"
+      target: "strength"
+      value: 80
+      description: "一次性的强效远程破甲攻击"
+  price: 250
+
+- item_id: "shura_manual"
+  name: "《杀伐诀》残页"
+  type: "skill_book"
+  description: "神武门禁术残篇，记载着一门以损耗经脉为代价换取极限速度的身法秘术。裴刃偷偷学习的正是这门术法的残页。"
+  rarity: "rare"
+  stackable: false
+  effects:
+    - type: "learn_skill"
+      target: "shura_step"
+      value: 1
+      description: "习得禁术·杀伐步残篇（有副作用）"
+  price: 500

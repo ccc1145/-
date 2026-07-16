@@ -1,0 +1,937 @@
+# ============================================================
+# 随机 NPC 成分池
+# Agent 在需要生成随机 NPC 时，从各池中按规则组合抽取
+# ============================================================
+# 生成规则（供 Agent 参考）
+generation_rules:
+  pick_identity_strategy: "by_scene"
+  personality_count: 3
+  background_count: 1
+  coherence_priority: "identity_first"
+
+# ============================================================
+# 一、身份池 — 按宗门组织
+# 总计 34 个身份，宗门内部 29 个，外部 5 个
+# ============================================================
+identities:
+  # ---------- 玄清宗（8 个）----------
+  - identity_id: "xuanqing_patrol"
+    sect: "xuanqing"
+    name: "巡天卫"
+    description: "执律殿下最强武力，修为精深纪律严明，负责宗门内外执法、巡逻守卫，平时在弟子面前出现不多，但一旦现身必有事发生。"
+    realm_range:
+      min: "6阶叩天门（炼虚期）"
+      max: "6阶叩天门（炼虚期）"
+    personality_affinity:
+      preferred: ["沉稳", "刚直", "敏锐"]
+      excluded: ["怯懦", "圆滑"]
+  - identity_id: "xuanqing_instructor"
+    sect: "xuanqing"
+    name: "各院教习"
+    description: "四殿八院中负责给弟子授课的教员，修为深厚学问渊博，对各自领域的术法有独到见解。"
+    realm_range:
+      min: "5阶观沧海（化神期）"
+      max: "6阶叩天门（炼虚期）"
+    personality_affinity:
+      preferred: ["博学", "沉稳"]
+      excluded: ["暴躁", "轻浮"]
+  - identity_id: "xuanqing_elder"
+    sect: "xuanqing"
+    name: "宗门长老"
+    description: "玄清宗地位尊崇的长老级人物，修为深不可测，掌管宗门重大事务，弟子日常不易直接接触。"
+    realm_range:
+      min: "5阶观沧海（化神期）"
+      max: "6阶叩天门（炼虚期）"
+    personality_affinity:
+      preferred: ["严厉", "孤傲", "沉稳"]
+      excluded: ["轻浮", "怯懦"]
+  - identity_id: "xuanqing_inner_disciple"
+    sect: "xuanqing"
+    name: "内门弟子"
+    description: "入门已久通过考核晋升内门的弟子，修为已臻元婴境以上，是外门弟子的前辈和榜样。"
+    realm_range:
+      min: "4阶揽月（元婴期）"
+      max: "5阶观沧海（化神期）"
+    personality_affinity:
+      preferred: []
+      excluded: []
+  - identity_id: "xuanqing_outer_disciple"
+    sect: "xuanqing"
+    name: "外门弟子"
+    description: "刚入门或尚在筑基金丹期的弟子，每日在四象台晨练、各院听课，是与玩家最频繁互动的同届群体。"
+    realm_range:
+      min: "筑基期"
+      max: "金丹期"
+    personality_affinity:
+      preferred: []
+      excluded: []
+  - identity_id: "xuanqing_alchemist"
+    sect: "xuanqing"
+    name: "丹房执事"
+    description: "负责在丹器院炼制与分发丹药的执事，常年与丹炉灵植打交道，性情多半沉稳务实。"
+    realm_range:
+      min: "4阶揽月（元婴期）"
+      max: "5阶观沧海（化神期）"
+    personality_affinity:
+      preferred: ["沉稳", "务实"]
+      excluded: ["暴躁", "轻浮"]
+  - identity_id: "xuanqing_librarian"
+    sect: "xuanqing"
+    name: "藏经阁守书人"
+    description: "看守万碑亭的守书人，终日与典籍为伴，话少但学识渊博，对宗门传承了如指掌。"
+    realm_range:
+      min: "4阶揽月（元婴期）"
+      max: "5阶观沧海（化神期）"
+    personality_affinity:
+      preferred: ["寡言", "孤傲", "博学"]
+      excluded: ["开朗", "圆滑"]
+  - identity_id: "xuanqing_servant"
+    sect: "xuanqing"
+    name: "杂役弟子"
+    description: "负责宗门日常杂务的低阶弟子，修为不高但消息灵通，各处奔走间能听到不少风声。"
+    realm_range:
+      min: "炼气期"
+      max: "筑基期"
+    personality_affinity:
+      preferred: ["质朴", "勤恳"]
+      excluded: ["孤傲", "暴躁"]
+
+  # ---------- 神武门（7 个）----------
+  - identity_id: "shenwu_captain"
+    sect: "shenwu"
+    name: "战队长"
+    description: "五军战队长之一，修为已达叩天门境，是从无数次实战中杀出来的铁血战士。"
+    realm_range:
+      min: "6阶叩天门（炼虚期）"
+      max: "6阶叩天门（炼虚期）"
+    personality_affinity:
+      preferred: ["铁血", "刚直"]
+      excluded: ["怯懦", "圆滑"]
+  - identity_id: "shenwu_trainer"
+    sect: "shenwu"
+    name: "演武教习"
+    description: "在演武场上负责训练弟子的教习，实战经验丰富，对武道有近乎偏执的追求。"
+    realm_range:
+      min: "5阶观沧海（化神期）"
+      max: "6阶叩天门（炼虚期）"
+    personality_affinity:
+      preferred: ["严厉", "慕强"]
+      excluded: ["怯懦", "轻浮"]
+  - identity_id: "shenwu_vanguard"
+    sect: "shenwu"
+    name: "内门战卫"
+    description: "通过实战考验晋升的内门弟子，已随军参加过真正的战斗，浑身散发着战场煞气。"
+    realm_range:
+      min: "4阶揽月（元婴期）"
+      max: "5阶观沧海（化神期）"
+    personality_affinity:
+      preferred: ["豪爽", "好战"]
+      excluded: ["怯懦"]
+  - identity_id: "shenwu_warrior"
+    sect: "shenwu"
+    name: "外门战徒"
+    description: "刚入神武门的新兵，每日负重蛙跳千钧道、在演武场上打磨体魄，是玩家的同期战徒。"
+    realm_range:
+      min: "筑基期"
+      max: "金丹期"
+    personality_affinity:
+      preferred: []
+      excluded: []
+  - identity_id: "shenwu_weaponsmith"
+    sect: "shenwu"
+    name: "锻器师"
+    description: "砺锋殿中专司锻造兵器的铁匠，常年与炉火金铁为伴，性子多半暴躁但手艺一流。"
+    realm_range:
+      min: "4阶揽月（元婴期）"
+      max: "5阶观沧海（化神期）"
+    personality_affinity:
+      preferred: ["暴躁", "孤傲"]
+      excluded: ["友善", "圆滑"]
+  - identity_id: "shenwu_logistician"
+    sect: "shenwu"
+    name: "后勤执事"
+    description: "管理宗门物资调配的执事，精打细算务实行事，清楚每个弟子的资源配给。"
+    realm_range:
+      min: "4阶揽月（元婴期）"
+      max: "4阶揽月（元婴期）"
+    personality_affinity:
+      preferred: ["务实", "精明"]
+      excluded: ["暴躁"]
+  - identity_id: "shenwu_veteran"
+    sect: "shenwu"
+    name: "伤退老兵"
+    description: "因伤从前线退下的老兵，转做后勤或教学工作，身上带伤眼神沧桑，经验丰富。"
+    realm_range:
+      min: "金丹期"
+      max: "元婴期"
+    personality_affinity:
+      preferred: ["沧桑", "沉稳"]
+      excluded: ["轻浮", "开朗"]
+
+  # ---------- 扶龙宫（7 个）----------
+  - identity_id: "fulong_instructor"
+    sect: "fulong"
+    name: "宫中教习"
+    description: "扶龙宫的高级教习，负责教授《皇极惊世典》基础篇及帝王术策论，礼仪周全学识深厚。"
+    realm_range:
+      min: "5阶观沧海（化神期）"
+      max: "6阶叩天门（炼虚期）"
+    personality_affinity:
+      preferred: ["严谨", "沉稳"]
+      excluded: ["轻浮", "暴躁"]
+  - identity_id: "fulong_inner"
+    sect: "fulong"
+    name: "内宫弟子"
+    description: "皇室宗亲或功勋子弟，身份尊贵资源最优渥，但约束也最多，言行举止代表皇室颜面。"
+    realm_range:
+      min: "4阶揽月（元婴期）"
+      max: "5阶观沧海（化神期）"
+    personality_affinity:
+      preferred: []
+      excluded: ["怯懦"]
+  - identity_id: "fulong_outer"
+    sect: "fulong"
+    name: "外宫弟子"
+    description: "以才能而非出身被选入扶龙宫的外姓弟子，明白自己的天花板但依然勤勉。"
+    realm_range:
+      min: "筑基期"
+      max: "金丹期"
+    personality_affinity:
+      preferred: []
+      excluded: ["轻浮"]
+  - identity_id: "fulong_guard"
+    sect: "fulong"
+    name: "烛龙卫"
+    description: "守卫禁地与要人的精锐侍卫，修为高深沉默寡言，对皇室绝对忠诚，不会与外人闲聊。"
+    realm_range:
+      min: "5阶观沧海（化神期）"
+      max: "6阶叩天门（炼虚期）"
+    personality_affinity:
+      preferred: ["忠诚", "寡言"]
+      excluded: ["开朗", "圆滑"]
+  - identity_id: "fulong_scribe"
+    sect: "fulong"
+    name: "文书官"
+    description: "宫中负责文书档案的小吏，做事细致入微，深谙宫中规矩知道什么该说什么不该说。"
+    realm_range:
+      min: "3阶焚野（金丹期）"
+      max: "4阶揽月（元婴期）"
+    personality_affinity:
+      preferred: ["细致", "圆滑"]
+      excluded: ["暴躁", "豪爽"]
+  - identity_id: "fulong_steward"
+    sect: "fulong"
+    name: "膳官"
+    description: "管理宫中膳食的管事，迎来送往消息灵通，从膳食用度中能感知宫中风向。"
+    realm_range:
+      min: "3阶焚野（金丹期）"
+      max: "4阶揽月（元婴期）"
+    personality_affinity:
+      preferred: ["圆滑", "开朗"]
+      excluded: ["孤傲", "寡言"]
+  - identity_id: "fulong_ritualist"
+    sect: "fulong"
+    name: "礼仪执事"
+    description: "专职皇室礼仪与祭祀的执事，刻板严谨一丝不苟，任何礼仪瑕疵都逃不过他的眼睛。"
+    realm_range:
+      min: "3阶焚野（金丹期）"
+      max: "4阶揽月（元婴期）"
+    personality_affinity:
+      preferred: ["刻板", "严谨"]
+      excluded: ["轻浮", "开朗"]
+
+  # ---------- 红尘阁（7 个）----------
+  - identity_id: "hongchen_liaison"
+    sect: "hongchen"
+    name: "联络官"
+    description: "琴使或棋使下属的高级情报人员，负责与各据点的接头人对接，城府极深滴水不漏。"
+    realm_range:
+      min: "5阶观沧海（化神期）"
+      max: "6阶叩天门（炼虚期）"
+    personality_affinity:
+      preferred: ["狡黠", "多疑"]
+      excluded: ["友善", "诚实"]
+  - identity_id: "hongchen_inner"
+    sect: "hongchen"
+    name: "内门门人"
+    description: "红尘阁的核心门人，有权限接触高等情报，表面身份多半是某个文人雅士或商贾。"
+    realm_range:
+      min: "4阶揽月（元婴期）"
+      max: "5阶观沧海（化神期）"
+    personality_affinity:
+      preferred: ["心思缜密", "敏锐"]
+      excluded: ["轻浮", "开朗"]
+  - identity_id: "hongchen_outer"
+    sect: "hongchen"
+    name: "外门门人"
+    description: "红尘阁基层情报人员，以各种伪装身份活动于市井之间——可能是店小二、花匠、走方郎中。"
+    realm_range:
+      min: "筑基期"
+      max: "金丹期"
+    personality_affinity:
+      preferred: []
+      excluded: []
+  - identity_id: "hongchen_shopkeeper"
+    sect: "hongchen"
+    name: "伪装经营者"
+    description: "据点的表面经营人，入戏极深有时连自己都快忘了真实身份，演技是基本生存技能。"
+    realm_range:
+      min: "金丹期"
+      max: "元婴期"
+    personality_affinity:
+      preferred: ["演技精湛", "圆滑"]
+      excluded: ["诚实", "怯懦"]
+  - identity_id: "hongchen_analyst"
+    sect: "hongchen"
+    name: "情报分析员"
+    description: "负责整理分析各渠道传来的情报碎片，记忆力惊人能从蛛丝马迹中拼出真相。"
+    realm_range:
+      min: "4阶揽月（元婴期）"
+      max: "5阶观沧海（化神期）"
+    personality_affinity:
+      preferred: ["多疑", "博学"]
+      excluded: ["开朗", "轻浮"]
+  - identity_id: "hongchen_enforcer"
+    sect: "hongchen"
+    name: "画使下属"
+    description: "四使之画使的行动人员，擅长隐匿刺杀窃取等暗面工作，冷酷无情效率至上。"
+    realm_range:
+      min: "5阶观沧海（化神期）"
+      max: "6阶叩天门（炼虚期）"
+    personality_affinity:
+      preferred: ["冷静", "寡言"]
+      excluded: ["开朗", "友善"]
+  - identity_id: "hongchen_outsider"
+    sect: "hongchen"
+    name: "外部线人"
+    description: "红尘阁的外围临时雇员，不知道自己在为谁做事，只是拿钱办事的市井精明人。"
+    realm_range:
+      min: "凡人"
+      max: "炼气期"
+    personality_affinity:
+      preferred: ["精明", "势利"]
+      excluded: ["忠诚", "诚实"]
+
+  # ---------- 通用/外部（5 个）----------
+  - identity_id: "common_peasant"
+    sect: "neutral"
+    name: "凡人农夫"
+    description: "村野之中靠耕作为生的百姓，淳朴老实圈子小，对修仙者既敬畏又本能地保持距离。"
+    realm_range:
+      min: "凡人"
+      max: "凡人"
+    personality_affinity:
+      preferred: ["质朴", "怯懦"]
+      excluded: ["狡黠", "慕强"]
+  - identity_id: "common_merchant"
+    sect: "neutral"
+    name: "坊市商人"
+    description: "城镇中经营商铺的商人，见多识广八面玲珑，对各种人和事都有自己的价码。"
+    realm_range:
+      min: "凡人"
+      max: "凡人"
+    personality_affinity:
+      preferred: ["精明", "圆滑"]
+      excluded: ["质朴", "刚直"]
+  - identity_id: "common_wanderer"
+    sect: "neutral"
+    name: "游方散修"
+    description: "无门无派的自由修士，游历四方增长见识，说话做事比较随性不守宗门规矩。"
+    realm_range:
+      min: "炼气期"
+      max: "筑基期"
+    personality_affinity:
+      preferred: ["开朗", "狡黠"]
+      excluded: ["刻板", "严谨"]
+  - identity_id: "common_innkeeper"
+    sect: "neutral"
+    name: "客栈老板"
+    description: "经营旅店的生意人，迎来送往阅人无数，是最可靠的情报集散地主人。"
+    realm_range:
+      min: "凡人"
+      max: "凡人"
+    personality_affinity:
+      preferred: ["圆滑", "开朗"]
+      excluded: ["寡言", "孤傲"]
+  - identity_id: "common_bounty_hunter"
+    sect: "neutral"
+    name: "赏金猎人"
+    description: "以接取悬赏为生的低阶修士，务实冷漠不太在意手段只关心里程碑上的灵石数目。"
+    realm_range:
+      min: "金丹期"
+      max: "元婴期"
+    personality_affinity:
+      preferred: ["务实", "慕强"]
+      excluded: ["友善", "怯懦"]
+
+# ============================================================
+# 二、性格成分池 — 独立标签，按组分簇
+# 24 个标签，6 个性格组，每组内标签可自由组合
+# ============================================================
+personality_traits:
+  # 阳光亲和组
+  friendly:
+    name: "友善"
+    keywords: ["和善", "亲切", "好相处"]
+    group: "阳光亲和"
+    conflict_groups: ["孤高冷傲", "精明世故"]
+  honest:
+    name: "诚实"
+    keywords: ["正直", "坦率", "耿直"]
+    group: "阳光亲和"
+    conflict_groups: ["孤高冷傲", "精明世故"]
+  cheerful:
+    name: "开朗"
+    keywords: ["外向", "乐天", "爱笑"]
+    group: "阳光亲和"
+    conflict_groups: ["孤高冷傲", "精明世故"]
+  warmhearted:
+    name: "热心"
+    keywords: ["乐于助人", "热情", "仗义"]
+    group: "阳光亲和"
+    conflict_groups: ["孤高冷傲", "精明世故"]
+
+  # 稳重可靠组
+  steady:
+    name: "沉稳"
+    keywords: ["稳重", "沉着", "踏实"]
+    group: "稳重可靠"
+    conflict_groups: ["精明世故", "孤高冷傲"]
+  taciturn:
+    name: "寡言"
+    keywords: ["沉默", "话少", "内敛"]
+    group: "稳重可靠"
+    conflict_groups: ["精明世故", "孤高冷傲"]
+  perceptive:
+    name: "敏锐"
+    keywords: ["洞察力强", "机敏", "精明"]
+    group: "稳重可靠"
+    conflict_groups: ["精明世故", "孤高冷傲"]
+  reliable:
+    name: "可靠"
+    keywords: ["值得信赖", "负责", "靠谱"]
+    group: "稳重可靠"
+    conflict_groups: ["精明世故", "孤高冷傲"]
+
+  # 铁面严厉组
+  strict:
+    name: "严厉"
+    keywords: ["严格", "严肃", "不苟言笑"]
+    group: "铁面严厉"
+    conflict_groups: ["阳光亲和", "谨小慎微"]
+  upright:
+    name: "刚直"
+    keywords: ["正直", "不阿", "讲原则"]
+    group: "铁面严厉"
+    conflict_groups: ["阳光亲和", "谨小慎微"]
+  irritable:
+    name: "暴躁"
+    keywords: ["易怒", "急性子", "火爆"]
+    group: "铁面严厉"
+    conflict_groups: ["阳光亲和", "谨小慎微"]
+  protective:
+    name: "护短"
+    keywords: ["护犊子", "重情义", "护着自己人"]
+    group: "铁面严厉"
+    conflict_groups: ["阳光亲和", "谨小慎微"]
+
+  # 精明世故组
+  cunning:
+    name: "狡黠"
+    keywords: ["滑头", "机变", "老狐狸"]
+    group: "精明世故"
+    conflict_groups: ["阳光亲和", "稳重可靠"]
+  suspicious:
+    name: "多疑"
+    keywords: ["疑心重", "谨慎", "不轻信"]
+    group: "精明世故"
+    conflict_groups: ["阳光亲和", "稳重可靠"]
+  smooth:
+    name: "圆滑"
+    keywords: ["八面玲珑", "不得罪人", "会来事"]
+    group: "精明世故"
+    conflict_groups: ["阳光亲和", "稳重可靠"]
+  snobbish:
+    name: "势利"
+    keywords: ["看人下菜碟", "趋炎附势", "现实"]
+    group: "精明世故"
+    conflict_groups: ["阳光亲和", "稳重可靠"]
+
+  # 谨小慎微组
+  timid:
+    name: "怯懦"
+    keywords: ["胆小", "怕事", "畏缩"]
+    group: "谨小慎微"
+    conflict_groups: ["铁面严厉", "孤高冷傲"]
+  hesitant:
+    name: "犹疑"
+    keywords: ["优柔寡断", "拿不定主意", "纠结"]
+    group: "谨小慎微"
+    conflict_groups: ["铁面严厉", "孤高冷傲"]
+  diligent:
+    name: "勤恳"
+    keywords: ["勤奋", "任劳任怨", "老实"]
+    group: "谨小慎微"
+    conflict_groups: ["铁面严厉", "孤高冷傲"]
+
+  # 孤高冷傲组
+  aloof:
+    name: "孤傲"
+    keywords: ["高傲", "清高", "不合群"]
+    group: "孤高冷傲"
+    conflict_groups: ["阳光亲和", "谨小慎微"]
+  indifferent:
+    name: "淡漠"
+    keywords: ["冷淡", "漠不关心", "疏离"]
+    group: "孤高冷傲"
+    conflict_groups: ["阳光亲和", "谨小慎微"]
+  acerbic:
+    name: "毒舌"
+    keywords: ["刻薄", "嘴毒", "爱损人"]
+    group: "孤高冷傲"
+    conflict_groups: ["阳光亲和", "谨小慎微"]
+  ambitious:
+    name: "慕强"
+    keywords: ["崇拜强者", "实力至上", "好胜"]
+    group: "孤高冷傲"
+    conflict_groups: ["阳光亲和", "谨小慎微"]
+
+  # 独立标签（不绑定组，灵活使用）
+  learned:
+    name: "博学"
+    keywords: ["学识渊博", "博览群书", "有见识"]
+    group: "独立"
+    conflict_groups: []
+  meticulous:
+    name: "细致"
+    keywords: ["细心", "周到", "一丝不苟"]
+    group: "独立"
+    conflict_groups: []
+  pragmatic:
+    name: "务实"
+    keywords: ["实际", "不浮夸", "讲究效率"]
+    group: "独立"
+    conflict_groups: []
+  insightful:
+    name: "心思缜密"
+    keywords: ["深思熟虑", "周密", "善于谋划"]
+    group: "独立"
+    conflict_groups: []
+  skilled_actor:
+    name: "演技精湛"
+    keywords: ["善于伪装", "入戏", "表情管理"]
+    group: "独立"
+    conflict_groups: []
+  loyal:
+    name: "忠诚"
+    keywords: ["忠心", "赤诚", "可托付"]
+    group: "独立"
+    conflict_groups: []
+  weathered:
+    name: "沧桑"
+    keywords: ["饱经风霜", "阅历丰富", "沉稳"]
+    group: "独立"
+    conflict_groups: []
+  lighthearted:
+    name: "轻浮"
+    keywords: ["不靠谱", "浮夸", "不稳重"]
+    group: "独立"
+    conflict_groups: []
+  bloodthirsty:
+    name: "好战"
+    keywords: ["嗜战", "好斗", "热血"]
+    group: "独立"
+    conflict_groups: []
+  ironblooded:
+    name: "铁血"
+    keywords: ["铁骨铮铮", "杀伐果断", "硬汉"]
+    group: "独立"
+    conflict_groups: []
+  naive:
+    name: "质朴"
+    keywords: ["纯朴", "不谙世故", "憨厚"]
+    group: "独立"
+    conflict_groups: []
+  rigid:
+    name: "刻板"
+    keywords: ["守旧", "一板一眼", "不懂变通"]
+    group: "独立"
+    conflict_groups: []
+  forthright:
+    name: "豪爽"
+    keywords: ["直爽", "痛快", "不拘小节"]
+    group: "独立"
+    conflict_groups: []
+  shrewd:
+    name: "精明"
+    keywords: ["精打细算", "敏锐", "不吃亏"]
+    group: "独立"
+    conflict_groups: []
+  rigorous:
+    name: "严谨"
+    keywords: ["周密", "一丝不苟", "审慎"]
+    group: "独立"
+    conflict_groups: []
+  calm:
+    name: "冷静"
+    keywords: ["镇定", "沉着", "理智"]
+    group: "独立"
+    conflict_groups: []
+
+# ============================================================
+# 三、背景经历池
+# 20 段经历：14 段始终可用 + 6 段事件门控
+# ============================================================
+backgrounds:
+  # ---------- 始终可用（通用型，14 段）----------
+  - bg_id: "apprenticeship"
+    story: "少年时拜入一位严厉的师父门下学艺，起早贪黑打磨基本功，虽然师父不假辞色但教给了ta安身立命的本事。"
+    personality_affinity: ["沉稳", "可靠", "务实"]
+    personality_conflict: ["轻浮"]
+    knowledge:
+      - "修炼之事没有捷径，根基打得越扎实走得越远"
+      - "有几种基本功的练法在宗门已经不传了，但师父教过"
+    secrets_weighted:
+      - secret: "师父当年是被宗门逐出的，但ta从不知道原因"
+        weight: 25
+      - secret: "没啥特别的，就是个普通的学艺经历"
+        weight: 75
+
+  - bg_id: "self_discovery"
+    story: "在修炼中偶然进入一种玄妙的顿悟状态，于刹那间领会了平时苦思不得的功法奥义，修为因此精进不少。"
+    personality_affinity: ["沉稳", "敏锐", "孤傲"]
+    personality_conflict: ["轻浮", "暴躁"]
+    knowledge:
+      - "修炼中的顿悟可遇不可求，但心境澄明时更容易触发"
+      - "那次顿悟让ta对功法有了自己的独到理解"
+    secrets_weighted:
+      - secret: "顿悟时隐约窥见了某种天地法则的碎片，但说不清楚"
+        weight: 20
+      - secret: "就是一次普通的修炼突破，没什么好说的"
+        weight: 80
+
+  - bg_id: "family_decline"
+    story: "出身曾算殷实的家族，后因家道中落不得不提早面对世态炎凉。这段经历让ta更加坚韧不问出身只看本事。"
+    personality_affinity: ["务实", "沉稳"]
+    personality_conflict: ["轻浮", "质朴"]
+    knowledge:
+      - "修行路上灵石才是最实在的东西，面子和排场都是虚的"
+      - "见过太多人情冷暖，知道锦上添花易雪中送炭难"
+    secrets_weighted:
+      - secret: "家族衰落背后似乎有大势力的影子，但ta查不下去"
+        weight: 15
+      - secret: "就是普通的家道中落，没啥隐秘"
+        weight: 85
+
+  - bg_id: "secret_favor"
+    story: "曾经无意中帮了一位大人物一个忙，大人物虽然没多说什么但一直记着这份人情。ta自己都不确定哪天会用上。"
+    personality_affinity: ["友善", "热心", "圆滑"]
+    personality_conflict: ["孤傲", "淡漠"]
+    knowledge:
+      - "某些高人的脾气很怪，但知恩图报的人也不少"
+      - "这份人情可以换一次不小的帮助"
+    secrets_weighted:
+      - secret: "那位大人物其实是被仇家追杀时被ta救下的，对方没暴露身份"
+        weight: 25
+      - secret: "就是帮人指了个路这种小事，对方可能早就忘了"
+        weight: 75
+
+  - bg_id: "hidden_talent"
+    story: "在炼器/炼丹/符箓等某个领域有一种出人意料的天赋，哪怕修为不高也做出了让人刮目相看的作品。"
+    personality_affinity: ["沉稳", "细致", "孤傲"]
+    personality_conflict: ["轻浮", "暴躁"]
+    knowledge:
+      - "修为不是一切，手艺活需要耐心和专注"
+      - "知道几种冷门的材料配比和手法诀窍"
+    secrets_weighted:
+      - secret: "ta的天赋来自一本意外得到的残页古法，不是自己悟的"
+        weight: 20
+      - secret: "就是手巧加练得多，没什么秘密"
+        weight: 80
+
+  - bg_id: "love_entanglement"
+    story: "曾有一段刻骨铭心的情缘，最终因门派之别或身份之隔无疾而终。如今提起仍会微微失神。"
+    personality_affinity: ["沉稳", "敏锐", "友善"]
+    personality_conflict: ["暴躁", "势利"]
+    knowledge:
+      - "修士之情缘也逃不过现实的羁绊"
+      - "知道对方所在宗门的一些情况"
+    secrets_weighted:
+      - secret: "那情缘其实并未真正了断，对方偶尔还会传讯"
+        weight: 15
+      - secret: "早就放下了，就当年轻时做了个梦"
+        weight: 85
+
+  - bg_id: "betrayal"
+    story: "曾被最信任的人背叛过——或为利益或为自保。从此交心变得很难，对谁都留三分余地。"
+    personality_affinity: ["多疑", "孤傲", "精明"]
+    personality_conflict: ["友善", "热心"]
+    knowledge:
+      - "人心隔肚皮，修行路上最危险的不是妖兽而是人心"
+      - "知道几种识别谎言和伪装的技巧"
+    secrets_weighted:
+      - secret: "背叛ta的人至今还在某个地方活得很好"
+        weight: 30
+      - secret: "事情已经过去了，ta不想再提"
+        weight: 70
+
+  - bg_id: "rescue"
+    story: "在一次意外中不顾自身安危救了他人一命。那一战让ta受了不轻的伤，但也让ta明白了自己真正在意什么。"
+    personality_affinity: ["热心", "刚直", "护短"]
+    personality_conflict: ["淡漠", "怯懦"]
+    knowledge:
+      - "关键时刻能靠得住的人比什么都重要"
+      - "知道那次意外的地点有些不对劲"
+    secrets_weighted:
+      - secret: "那次意外可能不是意外，是有人故意设局"
+        weight: 20
+      - secret: "就是碰上了妖兽突袭，救了就救了"
+        weight: 80
+
+  - bg_id: "oath_sworn"
+    story: "年轻时与几位挚友立下过重誓——同生共死守望相助。如今有人已不在，有人已变了样，但誓言ta还记着。"
+    personality_affinity: ["忠诚", "刚直", "可靠"]
+    personality_conflict: ["圆滑", "势利"]
+    knowledge:
+      - "有些事比修为和利益更重要"
+      - "那些故人的下落ta多少知道一些"
+    secrets_weighted:
+      - secret: "当年的誓言其实已经破过一次了，是ta先毁约的"
+        weight: 15
+      - secret: "大家都还活着，这就够了"
+        weight: 85
+
+  - bg_id: "witness_injustice"
+    story: "曾亲眼目睹一件极不公平的事——强者欺压弱者、上位者草菅人命。那一刻让ta对'正道'二字有了复杂看法。"
+    personality_affinity: ["刚直", "敏锐", "沉稳"]
+    personality_conflict: ["圆滑", "势利"]
+    knowledge:
+      - "正道未必真道，邪道未必邪路"
+      - "知道某些号称名门正派的修士做过什么龌龊事"
+    secrets_weighted:
+      - secret: "那年的事牵扯到某个大人物，ta至今不敢说出真相"
+        weight: 25
+      - secret: "事情已经过去了，说出来也没人信"
+        weight: 75
+
+  - bg_id: "combat_escape"
+    story: "经历过一次生死一线的战斗，能从那种绝境中活着回来本身就是本事。那之后ta对危险更加敏感了。"
+    personality_affinity: ["沉稳", "务实", "铁血"]
+    personality_conflict: ["怯懦", "轻浮"]
+    knowledge:
+      - "真正的战斗不是切磋较技，是拼命"
+      - "知道几种在绝境中保命的偏门手段"
+    secrets_weighted:
+      - secret: "那次逃生是靠了某件不该有的底牌"
+        weight: 20
+      - secret: "纯粹是运气好加上平时练得够狠"
+        weight: 80
+
+  - bg_id: "treasure_hunt"
+    story: "曾参与过一场寻宝——或是在秘境中捡漏，或是追查一张古图。最终虽有所获但也因此惹上了麻烦。"
+    personality_affinity: ["开朗", "狡黠", "慕强"]
+    personality_conflict: ["怯懦", "刻板"]
+    knowledge:
+      - "秘境和古墓里的好东西多，但盯着的人也多"
+      - "知道几处可能有宝但没人敢去的地方"
+    secrets_weighted:
+      - secret: "那次寻宝其实有同伴死在里面了，ta没跟任何人说"
+        weight: 20
+      - secret: "费了大劲只捞到点不值钱的东西，亏了"
+        weight: 80
+
+  - bg_id: "wander_years"
+    story: "在被收入宗门之前，曾在九洲游历了许多年，见过形形色色的人与事，算是同辈中最有见识的那一类。"
+    personality_affinity: ["开朗", "敏锐", "圆滑"]
+    personality_conflict: ["怯懦", "刻板"]
+    knowledge:
+      - "知道中洲以外的一些风土人情和传闻"
+      - "对各洲之间的路线和关卡了然于胸"
+    secrets_weighted:
+      - secret: "游历时在某个偏僻之地见过不该出现在那里的东西"
+        weight: 15
+      - secret: "就是到处走走看看，没什么特别的发现"
+        weight: 85
+
+  - bg_id: "mentor_guidance"
+    story: "受过一位前辈高人的指点，虽然时间不长但对ta的修炼之路产生了深远影响。"
+    personality_affinity: ["沉稳", "可靠", "热心"]
+    personality_conflict: ["轻浮", "孤傲"]
+    knowledge:
+      - "高人的一句话可以省去几年的摸索时间"
+      - "那位前辈教给ta的核心道理ta一直记着"
+    secrets_weighted:
+      - secret: "那位前辈其实身份见不得光，是隐姓埋名在世间行走的"
+        weight: 20
+      - secret: "就是一次偶然的提点，对方可能都不记得了"
+        weight: 80
+
+  # ---------- 事件门控型（6 段）----------
+  - bg_id: "border_patrol"
+    story: "曾随队前往天垣山脉边境巡查，亲眼见过妖兽袭村的惨状。从此对妖族深怀戒心，巡逻时总比旁人格外警惕。"
+    personality_affinity: ["沉稳", "刚直", "务实"]
+    personality_conflict: ["怯懦", "圆滑"]
+    trigger_flags: ["border_incident_occurred"]
+    knowledge:
+      - "天垣山脉深处的妖兽近期活动异常频繁"
+      - "边境防线有几处薄弱点"
+    secrets_weighted:
+      - secret: "那次巡查回来后，有几名队友莫名其妙失踪了，没人再提过"
+        weight: 20
+      - secret: "啥特别的也不知道，就是例行巡查"
+        weight: 80
+
+  - bg_id: "library_copyist"
+    story: "曾在藏经阁抄录古籍三年，对宗门的历史典籍了如指掌。那段清苦的日子养成了沉稳坚韧的性格。"
+    personality_affinity: ["沉稳", "寡言", "孤傲"]
+    personality_conflict: ["开朗", "暴躁"]
+    trigger_flags: ["awakening_completed"]
+    knowledge:
+      - "本门派建派历史中的重要人物和事件"
+      - "藏经阁有几本禁书被锁在最深处"
+    secrets_weighted:
+      - secret: "抄录时发现一本古籍中夹着一页密信，记载了某位长老的不光彩往事"
+        weight: 15
+      - secret: "没什么特别的，只是见过一些不让外传的功法残篇"
+        weight: 85
+
+  - bg_id: "exchange_sect"
+    story: "曾被派去其他宗门交流过一年，见识了不同流派的修行方式和理念，眼界开阔了不少。"
+    personality_affinity: ["开朗", "敏锐", "可靠"]
+    personality_conflict: ["孤傲", "怯懦"]
+    trigger_flags: ["player_chosen_sect"]
+    knowledge:
+      - "了解其他宗门的修行文化和特色"
+      - "认识几个其他宗门的同期弟子，偶尔还会联系"
+    secrets_weighted:
+      - secret: "交流期间无意间听到了某宗门内部的一些矛盾争端"
+        weight: 25
+      - secret: "没什么特别的，就是出去长了个见识"
+        weight: 75
+
+  - bg_id: "mission_failure"
+    story: "曾执行过一次重要任务却功败垂成，虽非ta一人之过但心里始终有个坎。每每想起都会更加谨慎。"
+    personality_affinity: ["沉稳", "务实", "敏锐"]
+    personality_conflict: ["轻浮", "开朗"]
+    trigger_flags: ["player_chosen_sect"]
+    knowledge:
+      - "有些任务是环环相扣的，一个环节出问题全盘皆输"
+      - "知道那次失败的真正原因——有人从中作梗"
+    secrets_weighted:
+      - secret: "那次任务失败是因为队伍里出了内鬼，ta知道是谁但没有证据"
+        weight: 30
+      - secret: "就是运气不好赶上了意外，没什么阴谋"
+        weight: 70
+
+  - bg_id: "political_intrigue"
+    story: "曾无意中卷入宗门或王朝的一场权谋漩涡，虽然最终脱身但深知修行路上不止有刀光剑影。"
+    personality_affinity: ["狡黠", "多疑", "圆滑"]
+    personality_conflict: ["友善", "诚实"]
+    trigger_flags: ["player_chosen_sect"]
+    knowledge:
+      - "宗门的政治和王朝的权谋一样复杂"
+      - "知道几个重要人物之间的明争暗斗关系"
+    secrets_weighted:
+      - secret: "那场权谋中ta其实被迫站了队，至今还在为那个选择付出代价"
+        weight: 25
+      - secret: "看到了一些不该看的，但ta装作什么都没看到"
+        weight: 75
+
+  - bg_id: "disciplinary_punishment"
+    story: "因触犯门规被罚面壁半年。在寂静中反复反思，出来后人沉稳了许多，但对戒律的执行有了更深的体会。"
+    personality_affinity: ["孤傲", "刚直", "沉稳"]
+    personality_conflict: ["怯懦", "圆滑"]
+    knowledge:
+      - "宗门的戒律执行比表面宽松，有些门规其实是摆设"
+    secrets_weighted:
+      - secret: "面壁期间见过某位长老深夜独自出山，此后三天未归"
+        weight: 25
+      - secret: "真的只是在面壁，啥也不知道"
+        weight: 75
+
+# ============================================================
+# 四、姓名池
+# ============================================================
+name_pool:
+  surnames:
+    - "张"
+    - "李"
+    - "王"
+    - "赵"
+    - "陈"
+    - "周"
+    - "刘"
+    - "林"
+    - "杨"
+    - "吴"
+    - "徐"
+    - "孙"
+    - "朱"
+    - "马"
+    - "胡"
+    - "郭"
+    - "何"
+    - "高"
+    - "罗"
+    - "郑"
+    - "沈"
+    - "韩"
+    - "秦"
+    - "顾"
+    - "萧"
+    - "叶"
+    - "苏"
+    - "白"
+    - "南宫"
+    - "欧阳"
+    - "慕容"
+    - "上官"
+    - "司徒"
+    - "司空"
+  given_names:
+    - "玄"
+    - "清"
+    - "尘"
+    - "逸"
+    - "凡"
+    - "明"
+    - "云"
+    - "风"
+    - "霜"
+    - "月"
+    - "雪"
+    - "寒"
+    - "冰"
+    - "影"
+    - "辰"
+    - "星"
+    - "阳"
+    - "灵"
+    - "玉"
+    - "青"
+  two_char_given_names:
+    - "清尘"
+    - "玄逸"
+    - "紫霜"
+    - "青溪"
+    - "玉辰"
+    - "灵羽"
+    - "寒月"
+    - "素心"
+    - "凝霜"
+    - "飞白"
+    - "青云"
+    - "长风"
+    - "明远"
+    - "子墨"
+    - "怀瑾"
+    - "佩兰"
+    - "知秋"
+    - "听雪"
+    - "问天"
+    - "行舟"
+  generation_chars:
+    xuanqing: ["清", "玄", "灵"]
+    shenwu: ["烈", "刚", "铁"]
+    fulong: ["玉", "明", "华"]
+    hongchen: ["隐", "影", "微"]

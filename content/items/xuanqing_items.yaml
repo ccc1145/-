@@ -1,0 +1,157 @@
+# 物品配置：玄清宗特色物品
+# 法修宗门——符箓、阵法工具、悟道辅助品
+- item_id: "xuanqing_robe"
+  name: "玄清月白袍"
+  type: "equipment"
+  description: "玄清宗制式弟子法袍，月白色布料以静心紫竹纤维织入，附有基础聚灵阵纹，穿着可小幅提升灵气感应。"
+  rarity: "common"
+  stackable: false
+  effects:
+    - type: "boost_attribute"
+      target: "spirit_power"
+      value: 5
+      description: "提升灵气感应能力"
+  price: 80
+
+- item_id: "purple_bamboo_sword"
+  name: "紫竹剑"
+  type: "equipment"
+  description: "以清妙山静心紫竹为材炼制而成的法剑，轻灵坚韧，对术法有微弱增幅效果。新弟子入门标配。"
+  rarity: "common"
+  stackable: false
+  effects:
+    - type: "boost_attribute"
+      target: "spell_power"
+      value: 5
+      description: "略微提升术法威力"
+  price: 100
+
+- item_id: "xuanqing_xinjing"
+  name: "《玄清心经》上册"
+  type: "skill_book"
+  description: "玄清宗入门功法，记载炼气期至筑基期的完整修炼法门。书页以紫竹纸制成，隐有清香。"
+  rarity: "common"
+  stackable: false
+  effects:
+    - type: "learn_skill"
+      target: "xuanqing_cultivation"
+      value: 1
+      description: "习得玄清宗基础修炼法门"
+  price: 0
+
+- item_id: "basic_talisman_paper"
+  name: "符纸（一叠）"
+  type: "material"
+  description: "玄清宗符院特制的空白符纸，以灵木浆加入微量灵石粉末制成。符院弟子日常练习消耗品。"
+  rarity: "common"
+  stackable: true
+  max_stack: 100
+  effects: []
+  price: 10
+
+- item_id: "spirit_ink"
+  name: "灵墨"
+  type: "material"
+  description: "以灵兽血混合矿物粉末调制而成的符墨，灵力传导性能优异，是绘制符箓的必备材料。"
+  rarity: "common"
+  stackable: true
+  max_stack: 20
+  effects: []
+  price: 15
+
+- item_id: "array_disc"
+  name: "阵盘·基础型"
+  type: "equipment"
+  description: "刻有预制阵法的便携阵盘，注入灵力即可激活一个小型聚灵阵或防护阵。阵院弟子常备工具。"
+  rarity: "uncommon"
+  stackable: false
+  effects:
+    - type: "boost_cultivation"
+      target: "player.cultivation"
+      value: 25
+      description: "激活阵盘后在一定范围内提升灵气浓度"
+  price: 200
+
+- item_id: "clarity_pill"
+  name: "清心丹"
+  type: "consumable"
+  description: "玄清宗丹器院炼制的辅助丹药，服后可清心明目、排除杂念，大幅提升悟道效率。"
+  rarity: "uncommon"
+  stackable: true
+  max_stack: 10
+  effects:
+    - type: "boost_cultivation"
+      target: "player.cultivation"
+      value: 40
+      description: "排除杂念，短时间内悟道效率大幅提升"
+  price: 80
+
+- item_id: "wind_thunder_talisman"
+  name: "风雷符"
+  type: "consumable"
+  description: "符院制式的攻击符箓，注入灵力后掷出可引发一阵风雷之力，对目标造成中等伤害。炼气期弟子可驱动。"
+  rarity: "uncommon"
+  stackable: true
+  max_stack: 10
+  effects:
+    - type: "boost_attribute"
+      target: "spell_power"
+      value: 30
+      description: "一次性的风雷术法攻击"
+  price: 60
+
+- item_id: "nether_soul_pill"
+  name: "养魂丹"
+  type: "consumable"
+  description: "魂院秘制丹药，以凝神草和魂晶粉末炼制而成，可滋养神魂、修复轻微神识损伤。"
+  rarity: "uncommon"
+  stackable: true
+  max_stack: 5
+  effects:
+    - type: "restore_mp"
+      value: 80
+      description: "滋养神魂，恢复大量灵力"
+  price: 150
+
+- item_id: "stele_fragment_copy"
+  name: "万道碑拓片"
+  type: "key_item"
+  description: "万道碑感悟的拓印副本——并非真正的神念传承，而是某位前辈将自己在碑前悟到的心得刻录而成的玉简。虽非真迹，仍有启迪价值。"
+  rarity: "rare"
+  stackable: false
+  effects:
+    - type: "boost_cultivation"
+      target: "player.cultivation"
+      value: 60
+      description: "阅读后可获得一次深刻的悟道体验"
+  price: 500
+
+- item_id: "suppression_talisman"
+  name: "镇灵符"
+  type: "consumable"
+  description: "玄清宗符院高阶符箓，可短时间封印目标灵力运转。常用于制止失控弟子或捕捉灵兽。金丹期以上方可有效使用。"
+  rarity: "rare"
+  stackable: true
+  max_stack: 3
+  effects:
+    - type: "boost_attribute"
+      target: "spell_power"
+      value: 60
+      description: "封印目标灵力，持续三息"
+  price: 300
+  required_realm:
+    major: "筑基"
+    minor: 3
+
+- item_id: "meditation_mat"
+  name: "静心蒲团"
+  type: "equipment"
+  description: "以静心紫竹的竹丝编织而成的蒲团，坐在其上打坐可显著降低杂念干扰，提升修炼效率。玄清宗弟子常备。"
+  rarity: "uncommon"
+  stackable: false
+  effects:
+    - type: "boost_cultivation"
+      target: "player.cultivation"
+      value: 10
+      description: "打坐时持续提升修炼效率"
+  price: 120

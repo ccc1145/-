@@ -1,0 +1,239 @@
+# 大事件：启灵与择宗
+# 所有玩家的起点——经历启灵仪式、测出灵根资质、选择宗门
+event_id: "00_awakening_selection"
+name: "启灵与择宗"
+type: "major"
+description: "仙途初启，立在第一步。从凡尘走入修仙世界，经历启灵仪式，测出灵根资质，选择日后修行的宗门。"
+difficulty: 1
+tags: ["剧情", "入门", "选择"]
+
+trigger_conditions:
+  - type: "flag_check"
+    required_flags: ["game_start"]
+    forbidden_flags: ["awakening_completed"]
+
+scenes:
+  # ============================================================
+  # 场景一：世界引入
+  # ============================================================
+  world_intro:
+    scene_id: "world_intro"
+    name: "仙途伊始"
+    description: "你将要踏上一段修仙之旅。九洲大陆，广阔无垠——中洲、仙木洲、炽阳洲、苍玄洲、碧渊洲、星陨洲、漠沙洲、幽冥洲、南极洲，九洲各有其独特的风貌与法则。这片大地上，凡人与修士共存，王朝与宗门交织，灵脉奔涌，天道运转。你的故事，将从九洲之核心——中洲开始。"
+    mood: "庄严、辽阔、充满期待"
+    narrative_hook: "九洲初印象、仙凡共存的世界"
+    free_input_enabled: true
+    free_input_hints:
+      - "你可以问关于这个世界的问题"
+      - "也可以直接选择继续，进入启灵仪式"
+    choices:
+      - id: "proceed_to_awakening"
+        text: "踏入中洲，参加启灵仪式"
+        next_scene: "awakening_ceremony"
+        effects:
+          - type: "set_flag"
+            flag: "continent_chosen_zhongzhou"
+    agent_guidance:
+      setting_details:
+        - "九洲大陆的宏观景象——从高空俯瞰，九块大陆如同九颗明珠镶嵌在无尽海域中"
+        - "中洲居于中央位置，最为富庶繁华，龙脉之气最盛"
+      sensory_details:
+        - "仿佛从极高处俯瞰大地，云雾翻涌，山河如画"
+        - "隐隐感觉到大地深处有某种古老的律动——那是烛龙的心跳，与中洲龙脉同频"
+      npc_behavior_hints: []
+
+  # ============================================================
+  # 场景二：启灵仪式
+  # ============================================================
+  awakening_ceremony:
+    scene_id: "awakening_ceremony"
+    name: "启灵仪式"
+    description: "你来到中洲某座城池的启灵台前。每年此时，所有年满十二岁的少年都会在此接受启灵仪式，以测定灵根资质。台上立着一座三尺高的测灵石，呈青白色，表面刻满古老的符文。一名身着官袍的修士——启灵官——站在石旁，目光沉稳。"
+    mood: "庄重、肃穆、略带紧张"
+    narrative_hook: "第一次接触修仙世界的力量检测"
+    free_input_enabled: true
+    free_input_hints:
+      - "你可以描述自己的出身和此刻的心情"
+      - "也可以直接上前，将手放在测灵石上"
+      - "或者与启灵官交谈，了解更多启灵仪式的信息"
+    choices:
+      - id: "touch_the_stone"
+        text: "深吸一口气，将手放在测灵石上"
+        next_scene: "root_result"
+        effects:
+          - type: "set_flag"
+            flag: "awakening_performed"
+    agent_guidance:
+      setting_details:
+        - "启灵台是一座圆形青石平台，高出地面三丈，周围立有四根符文柱"
+        - "台下聚集着前来观礼的家人和路人，窃窃私语，充满期待"
+        - "测灵石表面温润如玉，符文在石中隐隐流转"
+        - "启灵官身着天监司制式官袍，神色平静，见惯不惊"
+      sensory_details:
+        - "空气中弥漫着一股淡淡的灵雾——启灵台的聚灵阵正在运转"
+        - "手靠近测灵石时会感到微微的热意，石中符文仿佛在呼吸"
+        - "周围人的目光聚焦在你身上，气氛安静而紧张"
+      npc_behavior_hints:
+        - "启灵官语气平缓，用标准公事口吻引导仪式"
+        - "不会有多余的寒暄或鼓励，但目光中透露出公正"
+        - "当你犹豫时，他会简短地示意：'将手放上去即可。'"
+
+  # ============================================================
+  # 场景三：灵根显现
+  # ============================================================
+  root_result:
+    scene_id: "root_result"
+    name: "灵根显现"
+    description: "你的手掌触碰到测灵石的一刹那，石中符文骤然亮起！一阵绚烂的光芒从石中迸发，照亮了整个启灵台。光芒的颜色、强度和变化方式，正在揭示你体内的灵根属性与品级。"
+    mood: "震撼、期待、命运揭晓"
+    narrative_hook: "灵根光芒决定了你未来的修仙道路"
+    free_input_enabled: true
+    free_input_hints:
+      - "你可以描述自己看到光芒时的感受"
+      - "可以观察周围人的反应"
+      - "也可以直接询问启灵官结果的含义"
+    choices:
+      - id: "ask_about_result"
+        text: "向启灵官询问灵根结果的含义"
+        next_scene: "sect_selection"
+        effects:
+          - type: "set_flag"
+            flag: "awakening_completed"
+      - id: "contemplate_result"
+        text: "默默看着光芒消退，心中已有盘算"
+        next_scene: "sect_selection"
+        effects:
+          - type: "set_flag"
+            flag: "awakening_completed"
+    agent_guidance:
+      setting_details:
+        - "测灵石根据灵根属性发出不同颜色的光芒：金-白、木-青、水-蓝、火-红、土-黄"
+        - "光芒的亮度代表灵根品级：天灵根以上会发出耀眼如小太阳般的光芒"
+        - "特殊灵根会出现复合色或异色光芒（如雷灵根带紫色电光、风灵根带青色旋纹）"
+        - "启灵官会在一方玉简上记录结果"
+      sensory_details:
+        - "手掌与测灵石接触处传来一阵温热，随后变为刺痛——灵气正顺着经脉涌入石中"
+        - "光芒亮起时，能感到周围空气被灵气扰动，形成微微的风"
+        - "台下响起一阵惊呼或议论声，取决于光芒的强弱"
+      npc_behavior_hints:
+        - "启灵官仔细观察光芒后，在玉简上记录，表情没有明显变化"
+        - "如果是废灵根，他会用公事公办的语气宣布结果，不带情绪"
+        - "如果是天才灵根，他眼底会闪过一丝不易察觉的惊讶"
+        - "记录完毕后他会说：'灵根已定。你可在中洲诸宗中选择其一，前往参加入门试炼。'"
+
+  # ============================================================
+  # 场景四：宗门选择
+  # ============================================================
+  sect_selection:
+    scene_id: "sect_selection"
+    name: "宗门选择"
+    description: "启灵官递给你一卷玉简，其上记载着中洲各大宗门的概况。你可以选择其中一个，前往参加入门试炼。不同的宗门有着截然不同的修行道路与文化——选择权在你手中。"
+    mood: "充满可能、慎重决策"
+    narrative_hook: "决定未来修行道路的岔路口"
+    free_input_enabled: true
+    free_input_hints:
+      - "你可以仔细阅读各宗门的简介再做决定"
+      - "也可以向启灵官询问建议"
+      - "或者凭借直觉选择最吸引你的宗门"
+    choices:
+      - id: "choose_xuanqing"
+        text: "玄清宗——天下法修圣地，位于清妙山。追求以法悟道、知行合一。适合心性沉稳、热爱钻研术法的修士。"
+        next_scene: "journey_to_sect"
+        effects:
+          - type: "set_flag"
+            flag: "sect_chosen_xuanqing"
+      - id: "choose_shenwu"
+        text: "神武门——天下武修祖庭，位于龙陨山脉。以实战磨砺武道，崇尚力量与效率。适合意志坚韧、好战善斗的修士。"
+        next_scene: "journey_to_sect"
+        effects:
+          - type: "set_flag"
+            flag: "sect_chosen_shenwu"
+      - id: "choose_fulong"
+        text: "扶龙宫——皇室修行学府，位于神都皇城之内。资源最优渥，与王朝气运绑定。适合渴望权势、志向远大的修士。"
+        next_scene: "journey_to_sect"
+        effects:
+          - type: "set_flag"
+            flag: "sect_chosen_fulong"
+      - id: "choose_hongchen"
+        text: "红尘阁——天下情报之宗，大隐于市。以七情六欲入道，修行方式独特。适合心思缜密、洞察世情的修士。"
+        next_scene: "journey_to_sect"
+        effects:
+          - type: "set_flag"
+            flag: "sect_chosen_hongchen"
+    agent_guidance:
+      setting_details:
+        - "启灵官递来的玉简散发出柔和的灵光，上面浮现出各宗门的文字简介与徽记"
+        - "玉简的内容会根据你的灵根资质略有侧重——与你灵根属性契合的宗门会自然排在前面"
+        - "启灵台周围的人群已逐渐散去，空气中还残留着测灵石的灵气余韵"
+      sensory_details:
+        - "玉简触手温润，上面的文字如有生命般微微流动"
+        - "抬起头可以看到远方天际线——中洲广阔的土地上，不同的方向对应着不同的宗门"
+        - "可以选择让启灵官补充说明，他的经验也许能帮你做决定"
+      npc_behavior_hints:
+        - "启灵官不会主动推荐任何宗门，保持中立态度"
+        - "如果你询问，他会根据你的灵根结果给出客观建议（如：'你木灵根突出，玄清宗的术院是个不错的选择'）"
+        - "但你决定后，他会在玉简上盖下灵印，作为入宗凭证"
+
+  # ============================================================
+  # 场景五：启程入宗
+  # ============================================================
+  journey_to_sect:
+    scene_id: "journey_to_sect"
+    name: "启程入宗"
+    description: "你手持盖了灵印的玉简，踏上了前往所选宗门的旅途。中洲的官道平坦宽阔，沿途可见灵轨列车从头顶呼啸而过，凡人商队与骑乘灵兽的低阶修士络绎不绝。你的未来，正在前方等待。"
+    mood: "期待、旅途感、过渡"
+    narrative_hook: "从启灵之城走向所选宗门，沿途感知中洲风貌"
+    free_input_enabled: true
+    free_input_hints:
+      - "你可以描述旅途中的见闻"
+      - "可以思考即将面临的入门试炼"
+      - "也可以欣赏沿途的中洲风景"
+    choices:
+      - id: "arrive_at_gate"
+        text: "抵达宗门山门"
+        next_scene: "arrival"
+    agent_guidance:
+      setting_details:
+        - "路途场景根据所选宗门有所不同：玄清宗方向需穿过天垣山脉支脉；神武门方向北上，气候渐寒；扶龙宫位于神都皇城，路途适中"
+        - "沿途可见凡人城镇、灵田、修士洞府，感受仙凡共存的中洲风貌"
+        - "灵轨列车偶尔从头顶的高架轨道上驶过，带起一阵风"
+      sensory_details:
+        - "脚下的官道是经过阵法加固的青石路，平整而宽阔"
+        - "越靠近宗门所在地，空气中灵气浓度逐渐变化——比如靠近玄清宗会感到清气浓郁，靠近神武门则感到煞气渐重"
+        - "旅途可能需要数日，可以在途中客栈歇脚，感受修仙世界的烟火气"
+      npc_behavior_hints: []
+
+  # ============================================================
+  # 场景六：抵达山门（衔接宗门入门试炼）
+  # ============================================================
+  arrival:
+    scene_id: "arrival"
+    name: "山门前"
+    description: "你终于站在了所选宗门的山门前。高耸的门楼、飘摇的宗门旗帜、来往的弟子——一切都那么新鲜而真实。从现在起，你将不再是旁观者，而是这个宗门的一员候选。入门试炼正等待着你。"
+    mood: "庄严、期待、命运的转折"
+    narrative_hook: "抵达宗门，准备迎接入门试炼"
+    free_input_enabled: true
+    free_input_hints:
+      - "你可以观察山门的景象"
+      - "可以感受宗门周围的气息"
+      - "准备好后，踏入山门接受入门试炼"
+    agent_guidance:
+      setting_details:
+        - "不同宗门的山门景象各异：玄清宗山门立于悬空仙岛之间，有虹桥相接；神武门山门是巨大的玄黑石门，刻满战场浮雕；扶龙宫山门金碧辉煌，隐于皇城宫苑之间"
+        - "山门前通常有接待弟子等候，会核验你的灵印玉简"
+      sensory_details:
+        - "宗门灵气浓度与外界的明显差异——越是强大的宗门，山门附近灵气越浓郁"
+        - "能听到宗门内部传来的声音：玄清宗的钟声、神武门的演武声、扶龙宫的宫廷雅乐"
+        - "空气中的气息也各具特色——神武门有淡淡的铁血味，玄清宗有清灵的紫竹香"
+      npc_behavior_hints:
+        - "接待弟子会接过你的玉简查验，然后引你入内"
+        - "他们的态度反映了宗门文化：玄清宗礼貌而矜持，神武门直接而干脆，扶龙宫礼仪周全"
+
+reward:
+  cultivation_gain: 10
+  add_items:
+    - item_id: "low_grade_spirit_stone"
+      quantity: 10
+  set_flags:
+    - "awakening_completed"
+    - "opening_flow_done"

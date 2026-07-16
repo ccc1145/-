@@ -1,0 +1,27 @@
+# 小事件：同门闲聊
+# 社交类——玩家在宗门遇到同门，自由对话
+event_id: "sect_chat"
+name: "同门闲聊"
+type: "minor"
+difficulty: 1
+tags: ["社交", "日常"]
+
+trigger_conditions:
+  - type: "flag_check"
+    required_flags: ["trial_completed"]
+
+free_narrative_hints:
+  - "玩家在宗门的某个角落（如四象台旁、紫竹林、膳堂、丹房门口）遇到一位同门"
+  - "同门从npc_pool中按规则生成——可能是外门弟子、内门弟子或杂役弟子"
+  - "同门正在休息或做自己的事，看到玩家后随意搭话"
+  - "话题方向由玩家决定——可以聊修炼心得、宗门八卦、最近传闻、对某位教习的评价等"
+  - "如果玩家态度友好且聊得投机，同门可能会分享一条有趣的小道消息"
+  - "如果玩家态度傲慢或无礼，同门敷衍几句就找借口离开"
+  - "Agent 根据玩家回应决定对话走向和结果，无预设路径"
+
+scenes:
+  entry:
+    scene_id: "entry"
+    name: "偶遇同门"
+    description: "你在宗门中走着，迎面遇到一个同门弟子。对方看到你，露出一个随意的笑容。"
+    free_input_enabled: true
