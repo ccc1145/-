@@ -64,3 +64,24 @@ chroma.sqlite3
 # === 日志 ===
 *.log
 logs/
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+*.egg
+
+# Virtual environments
+venv/
+env/
+
+# Database files
+*.db
+*.sqlite3
+
+# Environment files
+.env
+
+# IDE
+.vscode/
+.idea/
