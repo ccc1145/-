@@ -6,8 +6,8 @@ export type ActionType = 'choice' | 'free_input'
 
 export interface ItemEffect {
   type: string
-  value?: number
-  description?: string
+  value: number | null
+  description: string | null
 }
 
 export interface InventoryItem {
@@ -37,6 +37,12 @@ export interface PlayerState {
   }
   attributes: PlayerAttributes
   inventory: InventoryItem[]
+  hp: number | null
+  max_hp: number | null
+  mp: number | null
+  max_mp: number | null
+  spirit_stones: number
+  skills: string[]
 }
 
 export interface NPCState {

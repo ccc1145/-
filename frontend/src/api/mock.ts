@@ -54,6 +54,12 @@ function buildInitialState(request: StartSessionRequest): GameState {
         perception: 7,
       },
       inventory: [],
+      hp: 100,
+      max_hp: 100,
+      mp: 50,
+      max_mp: 50,
+      spirit_stones: 0,
+      skills: [],
     },
     npcs: {
       master: {
