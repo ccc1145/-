@@ -1,0 +1,246 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "npc_pool.schema.json",
+  "title": "随机NPC成分池 Schema",
+  "description": "定义随机NPC的4个成分池（身份、性格、背景、姓名）的结构规范，支持事件flag联动门控",
+  "type": "object",
+  "required": ["identities", "personality_traits", "backgrounds", "name_pool"],
+  "properties": {
+    "identities": { "$ref": "#/$defs/identity_pool" },
+    "personality_traits": { "$ref": "#/$defs/personality_pool" },
+    "backgrounds": { "$ref": "#/$defs/background_pool" },
+    "name_pool": { "$ref": "#/$defs/name_pool" },
+    "generation_rules": { "$ref": "#/$defs/generation_rules" }
+  },
+  "additionalProperties": false,
+
+  "$defs": {
+
+    "identity_pool": {
+      "type": "array",
+      "description": "身份池——按宗门组织的内部身份列表",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["identity_id", "sect", "name", "realm_range", "personality_affinity"],
+        "additionalProperties": false,
+        "properties": {
+          "identity_id": {
+            "type": "string",
+            "description": "身份唯一标识符（如 xuanqing_patrol）",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          },
+          "sect": {
+            "type": "string",
+            "description": "所属宗门",
+            "enum": ["xuanqing", "shenwu", "fulong", "hongchen", "neutral"]
+          },
+          "name": {
+            "type": "string",
+            "description": "显示名称（如 巡天卫、外门弟子）"
+          },
+          "description": {
+            "type": "string",
+            "description": "角色描述"
+          },
+          "realm_range": {
+            "type": "object",
+            "description": "修为范围（战力阶位+境界描述混写，如 5阶观沧海）",
+            "required": ["min", "max"],
+            "additionalProperties": false,
+            "properties": {
+              "min": {
+                "type": "string",
+                "description": "最低修为"
+              },
+              "max": {
+                "type": "string",
+                "description": "最高修为"
+              }
+            }
+          },
+          "personality_affinity": {
+            "type": "object",
+            "description": "性格倾向（从性格池中引用标签）",
+            "required": [],
+            "additionalProperties": false,
+            "properties": {
+              "preferred": {
+                "type": "array",
+                "description": "倾向性格标签列表",
+                "items": { "type": "string" }
+              },
+              "excluded": {
+                "type": "array",
+                "description": "排除性格标签列表",
+                "items": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "personality_pool": {
+      "type": "object",
+      "description": "性格成分池——以标签ID为键的性格标签字典",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "required": ["name", "group"],
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "性格标签显示名（如 友善、严厉）"
+          },
+          "keywords": {
+            "type": "array",
+            "description": "同义词/相关词",
+            "items": { "type": "string" }
+          },
+          "group": {
+            "type": "string",
+            "description": "所属性格组（如 阳光亲和、铁面严厉）"
+          },
+          "conflict_groups": {
+            "type": "array",
+            "description": "不能共存的性格组列表",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+
+    "background_pool": {
+      "type": "array",
+      "description": "背景经历池——含知识/秘密，与性格有亲和关系，支持事件flag门控",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["bg_id", "story", "personality_affinity"],
+        "additionalProperties": false,
+        "properties": {
+          "bg_id": {
+            "type": "string",
+            "description": "经历唯一标识符",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          },
+          "story": {
+            "type": "string",
+            "description": "经历描述（一段话，Agent可直接使用）"
+          },
+          "personality_affinity": {
+            "type": "array",
+            "description": "亲和性格标签（有此性格的人更可能有此经历）",
+            "minItems": 1,
+            "items": { "type": "string" }
+          },
+          "personality_conflict": {
+            "type": "array",
+            "description": "冲突性格标签（有此性格的人不应有此经历）",
+            "items": { "type": "string" }
+          },
+          "knowledge": {
+            "type": "array",
+            "description": "该经历带来的知识列表",
+            "items": { "type": "string" }
+          },
+          "secrets_weighted": {
+            "type": "array",
+            "description": "概率性秘密列表（Agent按权重抽取）",
+            "items": {
+              "type": "object",
+              "required": ["secret", "weight"],
+              "additionalProperties": false,
+              "properties": {
+                "secret": { "type": "string", "description": "秘密内容" },
+                "weight": {
+                  "type": "integer",
+                  "description": "抽取权重",
+                  "minimum": 1,
+                  "maximum": 1000
+                }
+              }
+            }
+          },
+          "trigger_flags": {
+            "type": "array",
+            "description": "需要世界状态中存在这些flag后，此经历才可用",
+            "items": { "type": "string" }
+          },
+          "forbidden_flags": {
+            "type": "array",
+            "description": "世界状态中存在任一flag时，此经历即不可用",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+
+    "name_pool": {
+      "type": "object",
+      "description": "姓名成分池",
+      "required": ["surnames"],
+      "additionalProperties": false,
+      "properties": {
+        "surnames": {
+          "type": "array",
+          "description": "姓氏列表",
+          "minItems": 10,
+          "items": { "type": "string" }
+        },
+        "given_names": {
+          "type": "array",
+          "description": "单名字库",
+          "items": { "type": "string" }
+        },
+        "two_char_given_names": {
+          "type": "array",
+          "description": "双名字库",
+          "items": { "type": "string" }
+        },
+        "generation_chars": {
+          "type": "object",
+          "description": "各宗门辈分字",
+          "properties": {
+            "xuanqing": { "type": "array", "items": { "type": "string" } },
+            "shenwu":   { "type": "array", "items": { "type": "string" } },
+            "fulong":   { "type": "array", "items": { "type": "string" } },
+            "hongchen": { "type": "array", "items": { "type": "string" } }
+          }
+        }
+      }
+    },
+
+    "generation_rules": {
+      "type": "object",
+      "description": "生成规则（Agent参考用，非强制性校验规则）",
+      "additionalProperties": false,
+      "properties": {
+        "pick_identity_strategy": {
+          "type": "string",
+          "description": "身份选择策略",
+          "enum": ["by_scene", "by_sect"]
+        },
+        "personality_count": {
+          "type": "integer",
+          "description": "每个NPC抽取的性格标签数",
+          "minimum": 2,
+          "maximum": 4
+        },
+        "background_count": {
+          "type": "integer",
+          "description": "每个NPC抽取的背景经历数",
+          "minimum": 1,
+          "maximum": 2
+        },
+        "coherence_priority": {
+          "type": "string",
+          "description": "连贯性优先策略",
+          "enum": ["identity_first", "personality_first"]
+        }
+      }
+    }
+  }
+}

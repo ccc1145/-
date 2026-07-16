@@ -1,0 +1,183 @@
+{
+  "book_id": "zhongzhou_politics",
+  "name": "中洲王朝志",
+  "description": "大宁王朝统治体系、门阀、宗门关系与仙凡共治",
+  "entries": [
+    {
+      "entry_id": "daning_dynasty",
+      "name": "大宁王朝国体",
+      "keys": [
+        "大宁",
+        "王朝",
+        "苍生道",
+        "国运",
+        "帝王",
+        "龙气"
+      ],
+      "content": "大宁王朝以'苍生道'立国。帝王必修《九鼎苍生诀》，其身、其魂、其修为皆与国运龙气深度绑定。国力强盛则帝力无穷，于中洲境内几近无敌；然若帝王失德暴政，则国运反噬，境界跌落乃至身死国崩。",
+      "category": "world_lore",
+      "weight": 270,
+      "scan_depth": 3,
+      "sticky": 0,
+      "cooldown": 3,
+      "max_tokens": 130
+    },
+    {
+      "entry_id": "shengxing_governance",
+      "name": "三省六部与扩展机构",
+      "keys": [
+        "三省六部",
+        "天工部",
+        "鸿胪寺",
+        "钦天监",
+        "官僚",
+        "凡人"
+      ],
+      "content": "行政中枢由凡人精英与低阶修士共治，负责一切世俗政务。于六部之下增设天工部（掌灵脉、神机）、鸿胪寺（掌外交）、钦天监（掌观测）等实权机构。严格遵循'修士不得无令干涉民生'之铁律。",
+      "category": "world_lore",
+      "weight": 240,
+      "scan_depth": 2,
+      "sticky": 0,
+      "cooldown": 3,
+      "max_tokens": 120
+    },
+    {
+      "entry_id": "tianjian_si",
+      "name": "天监司",
+      "keys": [
+        "天监司",
+        "监察",
+        "特务",
+        "执法",
+        "苍生血誓",
+        "天子影卫"
+      ],
+      "content": "帝王直属的修士特务与司法机构。负责监察宗门、百官，镇压'极道'修士。成员皆需立下'苍生血誓'，违誓者天道诛杀。是悬在整个修仙界头上的利剑，亦称'天子影卫'。",
+      "category": "world_lore",
+      "weight": 260,
+      "scan_depth": 2,
+      "sticky": 0,
+      "cooldown": 3,
+      "max_tokens": 110
+    },
+    {
+      "entry_id": "zhulong_guard",
+      "name": "烛龙卫",
+      "keys": [
+        "烛龙卫",
+        "禁卫军",
+        "军团",
+        "军队",
+        "神机",
+        "征战"
+      ],
+      "content": "王朝直属的常备超凡军团/禁卫军。兵源来自神武门、扶龙宫及军中佼佼者，装备最精良之法器与'神机'。负责卫戍京畿、征战四方，是王朝之盾与矛。",
+      "category": "world_lore",
+      "weight": 250,
+      "scan_depth": 2,
+      "sticky": 0,
+      "cooldown": 3,
+      "max_tokens": 100
+    },
+    {
+      "entry_id": "lingyue_system",
+      "name": "灵约体系",
+      "keys": [
+        "灵约",
+        "灵税",
+        "宗门",
+        "资源",
+        "三成",
+        "合法"
+      ],
+      "content": "所有境内宗门需与王朝签订'灵约'，缴纳三成资源（灵税）供养凡人体系，以换取合法开宗立派、招收弟子之权。此为王朝制衡宗门之经济命脉。",
+      "category": "rule_knowledge",
+      "weight": 250,
+      "scan_depth": 2,
+      "sticky": 0,
+      "cooldown": 3,
+      "max_tokens": 100
+    },
+    {
+      "entry_id": "zhongzhou_clans",
+      "name": "中洲顶尖门阀",
+      "keys": [
+        "门阀",
+        "世家",
+        "皇甫家",
+        "姜家",
+        "林家",
+        "白家",
+        "闻人家",
+        "苍林家"
+      ],
+      "content": "与王朝深度绑定的修仙世家，乃统治之基石。'洛水'皇甫家擅水法治理；'烈山'姜家擅火炼与兵法，与神武门关系密切；'青丘'林家擅幻术谍报，多供职于天监司；白家军武第一；闻人家文华第一，与玄清宗同气连枝；苍林家丹阵双绝，深受皇室倚重。",
+      "category": "world_lore",
+      "weight": 250,
+      "scan_depth": 2,
+      "sticky": 0,
+      "cooldown": 3,
+      "max_tokens": 150
+    },
+    {
+      "entry_id": "zhongzhou_sects_tax",
+      "name": "中洲宗门与王朝关系",
+      "keys": [
+        "玄清宗",
+        "神武门",
+        "扶龙宫",
+        "红尘阁",
+        "免税",
+        "灵约",
+        "合作"
+      ],
+      "content": "玄清宗享受最高免税待遇，门人核心供职于天监司与朝廷技术机构；神武门享受高额免税，为军方输送将领；扶龙宫不纳税反受供奉；红尘阁以'情报抵扣'方式完成灵税，保持神秘中立；其他宗门需严格履行灵约，缴纳重税，并受严密监控。",
+      "category": "world_lore",
+      "weight": 260,
+      "scan_depth": 2,
+      "sticky": 0,
+      "cooldown": 3,
+      "max_tokens": 150
+    },
+    {
+      "entry_id": "zhongzhou_culture",
+      "name": "中洲法则与文化",
+      "keys": [
+        "苍生道",
+        "包容",
+        "务实",
+        "等级",
+        "礼法",
+        "秩序",
+        "派系",
+        "斗争"
+      ],
+      "content": "最高法则为《九鼎苍生诀》所定义的'苍生道'，护佑众生，破坏此道者受国运反噬。文化特点为包容、务实、等级森严，高度繁荣，海纳百川。强调'各安其位'，既有修仙者之玄奇壮丽，亦有凡人之市井烟火。表面遵循礼法井然有序，然宗门、宗族、朝堂派系斗争激烈。",
+      "category": "world_lore",
+      "weight": 240,
+      "scan_depth": 3,
+      "sticky": 0,
+      "cooldown": 3,
+      "max_tokens": 140
+    },
+    {
+      "entry_id": "zhongzhou_xianmeng",
+      "name": "中洲与仙盟",
+      "keys": [
+        "仙盟",
+        "创始成员",
+        "核心支柱",
+        "天魔",
+        "大后方",
+        "资源"
+      ],
+      "content": "大宁王朝是九洲仙盟最重要的创始成员与核心支柱。皇帝于仙盟中话语权极重。中洲之稳定与强大，乃仙盟应对'天魔'威胁之大后方与资源保障基地。仙盟诸多决议，需得王朝配合方能于中洲推行。",
+      "category": "world_lore",
+      "weight": 230,
+      "scan_depth": 2,
+      "sticky": 0,
+      "cooldown": 3,
+      "max_tokens": 120
+    }
+  ]
+}

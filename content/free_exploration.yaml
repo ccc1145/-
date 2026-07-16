@@ -1,0 +1,77 @@
+# 自由探索（日常模式）配置
+# 文件: content/free_exploration.yaml
+# 用途: 定义玩家在无事件触发时的自由活动规则
+# 注意：各宗门的具体地点由引擎根据玩家当前宗门动态注入
+
+# 可探索的地点（通用模板，具体名称和描述由引擎根据玩家所在宗门动态填充）
+locations:
+  - id: "main_hall"
+    name: "宗门大殿"
+    description: "宗门核心区域，掌教与长老处理门务之所。每日晨钟于此响起，重大事务在此宣布。"
+    connected_to: ["training_ground", "quiet_room", "library"]
+    available_actions: ["聆听教诲", "请教学问", "观察来往弟子"]
+
+  - id: "training_ground"
+    name: "演武场/修炼台"
+    description: "弟子修炼与切磋的场所。地面刻有聚灵阵纹，修炼效率高于寻常。"
+    connected_to: ["main_hall", "quiet_room", "back_mountain"]
+    available_actions: ["修炼", "切磋", "观察他人练功"]
+
+  - id: "quiet_room"
+    name: "静室"
+    description: "你的私人修炼室。一丈见方，清静无扰。墙上挂着一个'静'字，窗外的景色随宗门而不同。"
+    connected_to: ["main_hall", "training_ground"]
+    available_actions: ["修炼", "打坐", "研读功法", "炼丹", "休息"]
+
+  - id: "back_mountain"
+    name: "后山/秘境入口"
+    description: "宗门后山区域。古木参天，灵气浓郁，常有前辈留下的遗迹或碑刻。偶有低阶灵兽出没。"
+    connected_to: ["training_ground"]
+    available_actions: ["探索", "寻找遗迹", "采集灵药", "静坐感悟"]
+
+  - id: "library"
+    name: "藏经阁/藏经楼"
+    description: "宗门典籍收藏之地。越往上层功法越珍贵，需凭贡献度或长老许可方可进入上层。"
+    connected_to: ["main_hall"]
+    available_actions: ["翻阅典籍", "研习术法", "查找资料"]
+
+# 全局可用动作（不受地点限制的通用动作）
+global_actions:
+  - id: "check_status"
+    name: "查看状态"
+    description: "查看当前修为、属性、物品、NPC好感度"
+  - id: "check_map"
+    name: "查看地图"
+    description: "查看当前所在位置和可前往的地点"
+  - id: "inventory"
+    name: "背包"
+    description: "查看和使用物品"
+  - id: "rest"
+    name: "休息"
+    description: "结束当前行动，恢复精力"
+
+# Agent 日常模式 Prompt 模板
+# {player_name} {player_state} {current_location} {nearby_npcs} 会被引擎替换
+agent_prompt_template: |
+  你是一个修仙世界的叙事引擎。玩家 "{player_name}" 正在进行日常修行。
+
+  当前状态：{player_state}
+  当前位置：{current_location}
+  附近角色：{nearby_npcs}
+
+  玩家可以自由行动：移动、交谈、修炼、炼丹、探索、休息等。
+  请根据玩家的输入生成叙事，并跟踪以下变化：
+  - 属性变化（修为、体力、感知等）
+  - 物品增减
+  - NPC好感度变化
+  - 是否触发小事件（参考小事件触发条件）
+
+  叙事要求：
+  - 符合"九洲修仙世界观"设定
+  - 符合各NPC的性格特征
+  - 保持叙事连贯性，前后呼应
+  - 如果玩家做危险的事，给出合理的后果
+  - 不要跳过时间过快（每次行动最多推进半天）
+
+# 小事件触发概率（每次日常行动后，0-1之间的概率）
+minor_event_probability: 0.15

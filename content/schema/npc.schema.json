@@ -1,0 +1,101 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "npc.schema.json",
+  "title": "NPC 角色卡 Schema",
+  "description": "定义 NPC 角色卡的结构规范，供后端引擎和 Agent 使用",
+  "type": "object",
+  "required": ["npc_id", "name", "description", "personality", "initial_state", "knowledge"],
+  "properties": {
+    "npc_id": {
+      "type": "string",
+      "description": "NPC 唯一标识符（如 master, senior_brother, rival）",
+      "pattern": "^[a-z][a-z0-9_]*$"
+    },
+    "name": {
+      "type": "string",
+      "description": "NPC 显示名称"
+    },
+    "description": {
+      "type": "string",
+      "description": "NPC 简短描述（角色定位摘要）"
+    },
+    "personality": {
+      "type": "object",
+      "required": ["traits", "speaking_style"],
+      "properties": {
+        "traits": {
+          "type": "array",
+          "description": "性格特征列表",
+          "minItems": 1,
+          "items": { "type": "string" }
+        },
+        "speaking_style": {
+          "type": "string",
+          "description": "说话风格描述"
+        },
+        "values": {
+          "type": "array",
+          "description": "核心价值观",
+          "items": { "type": "string" }
+        },
+        "dislikes": {
+          "type": "array",
+          "description": "厌恶的事物",
+          "items": { "type": "string" }
+        },
+        "emotional_range": {
+          "type": "array",
+          "description": "可能展现的情绪范围",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "initial_state": {
+      "type": "object",
+      "required": ["affinity", "location"],
+      "properties": {
+        "affinity": {
+          "type": "integer",
+          "description": "初始好感度（-100 ~ 100）",
+          "minimum": -100,
+          "maximum": 100
+        },
+        "location": {
+          "type": "string",
+          "description": "初始所在位置"
+        }
+      }
+    },
+    "knowledge": {
+      "type": "array",
+      "description": "该 NPC 掌握的知识（用于 Agent 叙事注入）",
+      "minItems": 1,
+      "items": { "type": "string" }
+    },
+    "dialogue_examples": {
+      "type": "array",
+      "description": "对话示例（用于 Few-shot Prompt）",
+      "items": {
+        "type": "object",
+        "required": ["user", "response"],
+        "properties": {
+          "context": { "type": "string", "description": "对话场景描述" },
+          "user": { "type": "string", "description": "玩家输入示例" },
+          "response": { "type": "string", "description": "NPC 回应示例" }
+        }
+      }
+    },
+    "relationships": {
+      "type": "array",
+      "description": "与其他 NPC 的关系",
+      "items": {
+        "type": "object",
+        "required": ["npc_id", "description"],
+        "properties": {
+          "npc_id": { "type": "string", "description": "目标 NPC 的 ID" },
+          "description": { "type": "string", "description": "关系描述" }
+        }
+      }
+    }
+  }
+}

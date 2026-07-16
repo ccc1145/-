@@ -1,0 +1,120 @@
+{
+  "book_id": "zhongzhou_geography",
+  "name": "中洲地理志",
+  "description": "中洲地貌、气候、核心地标与岁主关联",
+  "entries": [
+    {
+      "entry_id": "zhongzhou_landscape",
+      "name": "中洲地貌",
+      "keys": [
+        "中洲",
+        "地貌",
+        "平原",
+        "江河",
+        "丘陵",
+        "关隘",
+        "地形"
+      ],
+      "content": "中洲乃九洲最富庶、人口最密集之地。地貌囊括辽阔平原（京畿粮仓）、奔腾江河（水运命脉）、连绵丘陵（灵脉所伏）、险峻关隘（军事要塞）。山河形胜，自带一股堂皇王气，乃帝王定鼎之绝佳格局。",
+      "category": "world_lore",
+      "weight": 240,
+      "scan_depth": 3,
+      "sticky": 0,
+      "cooldown": 3,
+      "max_tokens": 120
+    },
+    {
+      "entry_id": "zhongzhou_climate",
+      "name": "中洲气候",
+      "keys": [
+        "中洲",
+        "气候",
+        "四季",
+        "风调雨顺",
+        "天灾",
+        "时序"
+      ],
+      "content": "中洲四季分明，风调雨顺，此乃岁主烛龙时序法则运行最完美之体现，被视为王朝'得天道认可'之象征。若王朝失德，亦会引发时序微调以示天谴，如京畿大旱、南境洪涝。",
+      "category": "world_lore",
+      "weight": 230,
+      "scan_depth": 3,
+      "sticky": 0,
+      "cooldown": 3,
+      "max_tokens": 110
+    },
+    {
+      "entry_id": "ningdu_city",
+      "name": "宁都",
+      "keys": [
+        "宁都",
+        "首都",
+        "皇城",
+        "王都",
+        "神都",
+        "京城"
+      ],
+      "content": "大宁王朝首都，龙脉之气汇聚之所。城分三重：外城凡俗市井，繁华似锦；内城百官衙署、贵族居所；皇城乃宫廷禁苑，为王朝核心。乃九洲最大最富庶之城市，凡人修士混居，气象万千。",
+      "category": "location_info",
+      "weight": 250,
+      "scan_depth": 3,
+      "sticky": 0,
+      "cooldown": 3,
+      "max_tokens": 130
+    },
+    {
+      "entry_id": "jiuding_cauldrons",
+      "name": "九鼎",
+      "keys": [
+        "九鼎",
+        "镇国之器",
+        "法则节点",
+        "龙脉",
+        "国运"
+      ],
+      "content": "镇国之器，分布于王都及八方巨城。非单纯礼器，乃与龙脉、《九鼎苍生诀》共鸣之法则节点，可调控一洲灵气、镇压国运、抵御外邪。",
+      "category": "world_lore",
+      "weight": 240,
+      "scan_depth": 3,
+      "sticky": 0,
+      "cooldown": 3,
+      "max_tokens": 100
+    },
+    {
+      "entry_id": "tianyuan_mountains",
+      "name": "天垣山脉",
+      "keys": [
+        "天垣山脉",
+        "龙脉",
+        "皇陵",
+        "祭坛",
+        "主干"
+      ],
+      "content": "中洲龙脉主干，王气发源之地。山势如龙蟠伏，皇室陵寝、重要祭坛皆建于此处，戒备森严。",
+      "category": "location_info",
+      "weight": 220,
+      "scan_depth": 3,
+      "sticky": 0,
+      "cooldown": 3,
+      "max_tokens": 80
+    },
+    {
+      "entry_id": "zhulong_zhongzhou",
+      "name": "烛龙与中洲",
+      "keys": [
+        "烛龙",
+        "时序",
+        "龙脉",
+        "昼夜",
+        "四季",
+        "天命"
+      ],
+      "content": "烛龙龙躯盘踞于中洲大地之下，心跳与地脉融为一体。中洲因此成为时序最稳定的大洲。大宁太祖观烛龙法则创《九鼎苍生诀》。王朝失德会引发烛龙法则纠错，表现为异常天灾。",
+      "category": "world_lore",
+      "weight": 260,
+      "scan_depth": 3,
+      "sticky": 0,
+      "cooldown": 3,
+      "max_tokens": 120
+    }
+  ]
+}
