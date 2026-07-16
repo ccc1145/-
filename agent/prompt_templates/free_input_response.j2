@@ -1,0 +1,58 @@
+{# 自由输入回应模板：基于玩家自由输入 + 意图分类，生成叙事回应。
+   对齐策划书 3.2.2 节 Step 3：生成叙事回应。 #}
+【玩家自由输入】
+{{ player_input }}
+
+【意图分析】
+意图类别：{{ intent.intent }}
+{% if intent.target %}目标对象：{{ intent.target }}
+{% endif %}
+{% if intent.topic %}主题：{{ intent.topic }}
+{% endif %}
+置信度：{{ intent.confidence }}
+分类方式：{{ intent.method }}
+
+{% if is_ooc %}
+【OOC 警告】
+玩家的输入超出修仙世界观（{{ ooc_reason }}）。
+请在叙事中自然引导玩家回到修仙世界，可以让 NPC 用疑惑或不解的态度回应，
+例如："师尊眉头微皱，似是不解你话中之意。" 不要直接说"你出戏了"。
+{% endif %}
+
+【游戏状态】（GameState v1.0）
+玩家：{{ game_state.player.name }}（{{ game_state.player.spiritual_root }}，修为 {{ game_state.player.cultivation }}）
+当前场景：{{ game_state.world.current_scene_id }}
+
+【在场 NPC】
+{% for npc_id, npc in npc_cards.items() -%}
+- {{ npc.name }}（好感度：{{ npc.current_affinity }}）：性格 {{ npc.personality.traits | join("、") }}
+{% else -%}
+（当前场景无 NPC，玩家的自由输入按内心独白或环境互动处理）
+{% endfor %}
+
+【最近事件】
+{% for event in memory.recent_events -%}
+- 第{{ event.turn }}轮：{{ event.narrative[:50] if event.narrative else '' }}...
+{% else -%}
+（游戏刚开始，暂无历史事件）
+{% endfor %}
+
+请根据玩家自由输入和意图分析，生成叙事回应。要求：
+1. NPC 的回应必须符合其性格和当前好感度。
+2. 如果意图是"询问"，NPC 应耐心解答（好感度可能 +1~+3）。
+3. 如果意图是"请求"，NPC 视合理性决定是否答应（拜师等重大请求需好感度门槛）。
+4. 如果意图是"挑衅"，NPC 应生气或冷淡（好感度可能 -5~-10）。
+5. 如果意图是"闲聊"，NPC 应友好但简短回应。
+6. 如果意图是"无关"或 OOC，自然引导回修仙世界。
+
+输出格式（严格 JSON，不要附加多余文字，不要放在代码块里）：
+{
+  "narrative": "完整的叙事文本（含玩家动作 + NPC 回应）",
+  "narrative_segments": [
+    {"type": "narration", "text": "旁白片段"},
+    {"type": "dialogue", "speaker": "NPC名", "text": "NPC台词"}
+  ],
+  "available_choices": [
+    {"id": "choice_id", "text": "选项文字"}
+  ]
+}

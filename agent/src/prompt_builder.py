@@ -83,3 +83,38 @@ class PromptBuilder:
             current_scene=current_scene,
             dialogue_history=dialogue_history,
         )
+
+    def build_free_input_response_prompt(
+        self,
+        *,
+        player_input: str,
+        intent: dict,
+        game_state: dict,
+        current_scene: dict,
+        npc_cards: dict,
+        memory: dict,
+        is_ooc: bool = False,
+        ooc_reason: str = "",
+    ) -> str:
+        """渲染自由输入回应提示：玩家输入 + 意图分类 + OOC 检测 + 上下文。
+
+        Args:
+            player_input: 玩家自由输入的原始文本
+            intent: 意图分类结果 dict，含 intent/target/topic/confidence/method
+            game_state: GameState v1.0
+            current_scene: 当前场景 dict
+            npc_cards: 在场 NPC 角色卡 dict
+            memory: 记忆上下文 dict
+            is_ooc: 是否检测到 OOC
+            ooc_reason: OOC 原因说明
+        """
+        return self._env.get_template("free_input_response.j2").render(
+            player_input=player_input,
+            intent=intent,
+            game_state=game_state,
+            current_scene=current_scene,
+            npc_cards=npc_cards,
+            memory=memory,
+            is_ooc=is_ooc,
+            ooc_reason=ooc_reason,
+        )
