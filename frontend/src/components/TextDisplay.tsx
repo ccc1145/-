@@ -9,6 +9,18 @@ interface TextDisplayProps {
 
 export function TextDisplay({ segments, isLoading, gameOver }: TextDisplayProps) {
   const contentKey = useMemo(() => JSON.stringify(segments), [segments])
+
+  return (
+    <TypingTextDisplay
+      key={contentKey}
+      segments={segments}
+      isLoading={isLoading}
+      gameOver={gameOver}
+    />
+  )
+}
+
+function TypingTextDisplay({ segments, isLoading, gameOver }: TextDisplayProps) {
   const totalCharacters = useMemo(
     () => segments.reduce((total, segment) => total + segment.text.length, 0),
     [segments],
@@ -16,8 +28,6 @@ export function TextDisplay({ segments, isLoading, gameOver }: TextDisplayProps)
   const [visibleCharacters, setVisibleCharacters] = useState(0)
 
   useEffect(() => {
-    setVisibleCharacters(0)
-
     if (totalCharacters === 0) return
 
     const timer = window.setInterval(() => {
@@ -32,12 +42,14 @@ export function TextDisplay({ segments, isLoading, gameOver }: TextDisplayProps)
     }, 22)
 
     return () => window.clearInterval(timer)
-  }, [contentKey, totalCharacters])
+  }, [totalCharacters])
 
-  let remaining = visibleCharacters
-  const displayedSegments = segments.map((segment) => {
-    const visibleText = segment.text.slice(0, Math.max(0, remaining))
-    remaining -= segment.text.length
+  const displayedSegments = segments.map((segment, index) => {
+    const precedingCharacters = segments
+      .slice(0, index)
+      .reduce((total, item) => total + item.text.length, 0)
+    const visibleLength = Math.max(0, visibleCharacters - precedingCharacters)
+    const visibleText = segment.text.slice(0, visibleLength)
     return { ...segment, text: visibleText }
   })
 

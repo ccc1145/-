@@ -53,7 +53,7 @@ export const gameApi = {
     try {
       return USE_MOCK ? await mockApi.startSession(request) : await startRealSession(request)
     } catch (error) {
-      throw new Error(getErrorMessage(error))
+      throw new Error(getErrorMessage(error), { cause: error })
     }
   },
 
@@ -63,7 +63,7 @@ export const gameApi = {
         ? await mockApi.submitAction(sessionId, request)
         : await submitRealAction(sessionId, request)
     } catch (error) {
-      throw new Error(getErrorMessage(error))
+      throw new Error(getErrorMessage(error), { cause: error })
     }
   },
 
@@ -72,7 +72,7 @@ export const gameApi = {
       const response = await http.get<{ state: GameState }>(`/session/${sessionId}/state`)
       return response.data.state
     } catch (error) {
-      throw new Error(getErrorMessage(error))
+      throw new Error(getErrorMessage(error), { cause: error })
     }
   },
 
@@ -81,7 +81,7 @@ export const gameApi = {
       const response = await http.post<SaveInfo>(`/session/${sessionId}/save`, { label })
       return response.data
     } catch (error) {
-      throw new Error(getErrorMessage(error))
+      throw new Error(getErrorMessage(error), { cause: error })
     }
   },
 
@@ -90,7 +90,7 @@ export const gameApi = {
       const response = await http.get<{ saves: SaveInfo[] }>(`/session/${sessionId}/saves`)
       return response.data.saves
     } catch (error) {
-      throw new Error(getErrorMessage(error))
+      throw new Error(getErrorMessage(error), { cause: error })
     }
   },
 
@@ -101,7 +101,7 @@ export const gameApi = {
       })
       return response.data.state
     } catch (error) {
-      throw new Error(getErrorMessage(error))
+      throw new Error(getErrorMessage(error), { cause: error })
     }
   },
 
