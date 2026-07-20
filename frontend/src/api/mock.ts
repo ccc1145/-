@@ -4,6 +4,7 @@ import type {
   Choice,
   GameState,
   NarrativeSegment,
+  SaveInfo,
   SpiritRootType,
   StartSessionRequest,
   StartSessionResponse,
@@ -13,6 +14,7 @@ const MOCK_DELAY = 450
 
 let currentState: GameState | null = null
 let currentChoices: Choice[] = []
+let mockSaves: Array<SaveInfo & { state: GameState }> = []
 
 function wait(ms = MOCK_DELAY): Promise<void> {
   return new Promise((resolve) => window.setTimeout(resolve, ms))
@@ -34,7 +36,7 @@ function randomSpiritRoot(): SpiritRootType {
 function buildInitialState(request: StartSessionRequest): GameState {
   return {
     session_id: `sess_${Date.now()}`,
-    current_scene_id: 'trial_grounds',
+    current_scene_id: 'awakening_ceremony',
     turn_count: 0,
     player: {
       name: request.player_name.trim() || '无名',
@@ -64,31 +66,31 @@ function buildInitialState(request: StartSessionRequest): GameState {
     npcs: {
       master: {
         id: 'master',
-        name: '玄清真人',
+        name: '启灵官',
         affinity: 0,
-        location: '青云门试炼场',
-        known_info: ['青云门执事长老', '性情严厉，重视根基'],
+        location: '中洲启灵台',
+        known_info: ['天监司启灵官', '负责记录灵根资质，立场中立'],
         dialogue_history: [],
       },
       senior_brother: {
         id: 'senior_brother',
-        name: '陆明远',
+        name: '沈昭露',
         affinity: 0,
-        location: '青云门试炼场',
-        known_info: ['青云门大师兄'],
+        location: '中洲启灵台',
+        known_info: ['玄清宗接引弟子'],
         dialogue_history: [],
       },
       rival: {
         id: 'rival',
-        name: '韩厉',
+        name: '裴任',
         affinity: -5,
-        location: '青云门试炼场',
+        location: '宗门演武场',
         known_info: ['与你同批参加入门试炼'],
         dialogue_history: [],
       },
     },
     world: {
-      current_location: '青云门试炼场',
+      current_location: '中洲启灵台',
       time: {
         day: 1,
         period: '上午',
@@ -184,8 +186,8 @@ function handleTrialGrounds(state: GameState, payload: string): ActionResponse {
       },
       {
         type: 'dialogue',
-        speaker: '玄清真人',
-        text: '修行之路，最忌瞻前顾后。既已来到此处，还不上前？',
+        speaker: '启灵官',
+        text: '不必紧张。凝神静气，将手放上测灵石即可。',
       },
     ]
     const choices: Choice[] = [
@@ -197,7 +199,7 @@ function handleTrialGrounds(state: GameState, payload: string): ActionResponse {
     })
     return createResponse(state, segments, choices, {
       sceneChanged: true,
-      thought: '玩家犹豫，玄清真人好感度降低 5。',
+      thought: '玩家暂时观察启灵仪式。',
     })
   }
 
@@ -221,8 +223,8 @@ function handleTrialGrounds(state: GameState, payload: string): ActionResponse {
     },
     {
       type: 'dialogue',
-      speaker: '玄清真人',
-      text: `${type}灵根，品质${quality}等。根骨尚可，心性如何，还要日后再看。`,
+      speaker: '启灵官',
+      text: `${type}灵根，品质${quality}等。灵根已定，你可从中洲四宗中选择一处参加入门试炼。`,
     },
     {
       type: 'narration',
@@ -230,9 +232,10 @@ function handleTrialGrounds(state: GameState, payload: string): ActionResponse {
     },
   ]
   const choices: Choice[] = [
-    { id: 'express_gratitude', text: '弟子拜谢长老' },
-    { id: 'stay_silent', text: '默默退到一旁' },
-    { id: 'ask_question', text: '询问长老修炼之法' },
+    { id: 'choose_xuanqing', text: '玄清宗 · 以法悟道，知行合一' },
+    { id: 'choose_shenwu', text: '神武门 · 以战砺道，刚勇精进' },
+    { id: 'choose_fulong', text: '扶龙宫 · 承王朝气运，兼修百艺' },
+    { id: 'choose_hongchen', text: '红尘阁 · 观七情六欲，洞察世情' },
   ]
   addRecentEvent(state, payload, segments.map((item) => item.text).join(''), {
     'player.cultivation': 10,
@@ -251,109 +254,24 @@ function handleTrialHesitate(state: GameState, payload: string): ActionResponse 
   return handleTrialGrounds(state, 'touch_stone')
 }
 
-function masterSelectionResponse(state: GameState, opening: NarrativeSegment[]): ActionResponse {
-  state.current_scene_id = 'master_selection'
-  const choices: Choice[] = [
-    { id: 'choose_master', text: '请求拜入玄清真人门下' },
-    { id: 'ask_senior', text: '先向大师兄了解门中情况' },
-  ]
-  return createResponse(state, opening, choices, {
-    sceneChanged: true,
-    thought: '试炼完成，进入拜师阶段。',
-  })
-}
-
 function handleTrialResult(state: GameState, payload: string): ActionResponse {
-  if (payload === 'express_gratitude') {
-    changeAffinity(state, 'master', 3)
-    return masterSelectionResponse(state, [
-      {
-        type: 'narration',
-        text: '你整理衣袖，向玄清真人郑重行了一礼。',
-      },
-      {
-        type: 'dialogue',
-        speaker: '玄清真人',
-        text: '知礼而不失锐气，尚可。今日试炼结束后，你可随我前往传功殿。',
-      },
-    ])
-  }
-
-  if (payload === 'ask_question') {
-    changeAffinity(state, 'master', 2)
-    state.current_scene_id = 'master_qa'
-    const segments: NarrativeSegment[] = [
-      {
-        type: 'narration',
-        text: '你没有立刻退下，而是恭敬询问如何感应天地灵气。',
-      },
-      {
-        type: 'dialogue',
-        speaker: '玄清真人',
-        text: '修炼无捷径。先静心，再观息，最后才是引气入体。根基若浮，走得越快，跌得越重。',
-      },
-    ]
-    const choices: Choice[] = [
-      { id: 'accept_guidance', text: '牢记教诲，认真道谢' },
-      { id: 'continue_trial', text: '点头退下，等待后续安排' },
-    ]
-    addRecentEvent(state, payload, segments.map((item) => item.text).join(''), {
-      'npcs.master.affinity': 2,
-    })
-    return createResponse(state, segments, choices, {
-      sceneChanged: true,
-      thought: '玩家主动求教，玄清真人好感度增加 2。',
-    })
-  }
-
-  return masterSelectionResponse(state, [
-    {
-      type: 'narration',
-      text: '你没有多言，只是安静退到一旁。玄清真人略一颔首，转身继续主持试炼。',
-    },
-  ])
-}
-
-function handleMasterQa(state: GameState, payload: string): ActionResponse {
-  if (payload === 'accept_guidance') {
-    changeAffinity(state, 'master', 2)
-  }
-  return masterSelectionResponse(state, [
-    {
-      type: 'narration',
-      text: '你将长老的话记在心中。钟声再次响起，试炼场上的弟子陆续被带往各峰。',
-    },
-  ])
-}
-
-function handleMasterSelection(state: GameState, payload: string): ActionResponse {
-  if (payload === 'ask_senior') {
-    changeAffinity(state, 'senior_brother', 4)
-    const segments: NarrativeSegment[] = [
-      {
-        type: 'narration',
-        text: '你走向站在石阶旁的大师兄，低声询问青云门各峰的情况。',
-      },
-      {
-        type: 'dialogue',
-        speaker: '陆明远',
-        text: '玄清师叔虽严厉，却最重弟子根基。你若真心修行，拜入他门下并非坏事。',
-      },
-    ]
-    const choices: Choice[] = [{ id: 'choose_master', text: '听从建议，请求拜师' }]
-    addRecentEvent(state, payload, segments.map((item) => item.text).join(''), {
-      'npcs.senior_brother.affinity': 4,
-    })
-    return createResponse(state, segments, choices, {
-      thought: '向大师兄求教，大师兄好感度增加 4。',
-    })
-  }
+  const sects = {
+    choose_xuanqing: { name: '玄清宗', location: '清妙山静室', guide: '沈昭露' },
+    choose_shenwu: { name: '神武门', location: '龙陨山砺体院', guide: '裴任' },
+    choose_fulong: { name: '扶龙宫', location: '神都潜龙阁', guide: '闻知远' },
+    choose_hongchen: { name: '红尘阁', location: '红尘幻境', guide: '柳如诗' },
+  } as const
+  const sect = sects[payload as keyof typeof sects]
+  if (!sect) throw new Error('请选择一个宗门。')
 
   state.current_scene_id = 'first_cultivation'
-  state.world.current_location = '青云门静室'
+  state.world.current_location = sect.location
   state.world.time.period = '傍晚'
   state.world.flags.became_disciple = true
-  changeAffinity(state, 'master', 5)
+  state.world.flags[`sect_chosen_${payload.replace('choose_', '')}`] = true
+  state.npcs.senior_brother.name = sect.guide
+  state.npcs.senior_brother.location = sect.location
+  changeAffinity(state, 'senior_brother', 5)
   state.player.inventory.push({
     item_id: 'qi_gathering_pill',
     name: '聚气丹',
@@ -364,16 +282,16 @@ function handleMasterSelection(state: GameState, payload: string): ActionRespons
   const segments: NarrativeSegment[] = [
     {
       type: 'narration',
-      text: '传功殿中香烟袅袅。你跪坐于蒲团前，双手奉上弟子礼。玄清真人沉默片刻，最终接过名册。',
+      text: `玉简上的灵印亮起，你踏上前往${sect.name}的旅途。数日后，你通过入门考核，正式成为外门弟子。`,
     },
     {
       type: 'dialogue',
-      speaker: '玄清真人',
-      text: '从今日起，你便是我门下记名弟子。此丹助你初次引气，但修行终究要靠自己。',
+      speaker: sect.guide,
+      text: '这是宗门赐予新弟子的聚气丹。今夜先试着引气入体，切记守住心神。',
     },
     {
       type: 'narration',
-      text: '你获得了【聚气丹】。入夜前，你被带到一间安静石室，准备第一次正式修炼。',
+      text: `你获得了【聚气丹】，随后被带到${sect.location}，准备第一次正式修炼。`,
     },
   ]
   const choices: Choice[] = [
@@ -382,12 +300,12 @@ function handleMasterSelection(state: GameState, payload: string): ActionRespons
   ]
   addRecentEvent(state, payload, segments.map((item) => item.text).join(''), {
     'world.flags.became_disciple': true,
-    'npcs.master.affinity': 5,
+    selected_sect: sect.name,
     inventory: '获得聚气丹',
   })
   return createResponse(state, segments, choices, {
     sceneChanged: true,
-    thought: '玩家拜师成功，获得聚气丹并进入首次修炼。',
+    thought: `玩家选择${sect.name}，获得聚气丹并进入首次修炼。`,
   })
 }
 
@@ -408,7 +326,7 @@ function handleFirstCultivation(state: GameState, payload: string): ActionRespon
   addCultivation(state, gained)
   state.world.flags.first_cultivation_completed = true
   state.current_scene_id = 'sect_tournament'
-  state.world.current_location = '青云门演武场'
+  state.world.current_location = '宗门演武场'
   state.world.time.day = 30
   state.world.time.period = '上午'
 
@@ -420,7 +338,7 @@ function handleFirstCultivation(state: GameState, payload: string): ActionRespon
     },
     {
       type: 'dialogue',
-      speaker: '陆明远',
+      speaker: state.npcs.senior_brother.name,
       text: '一个月后的门派小比已经开始。师弟，真正的考验才刚刚到来。',
     },
   ]
@@ -440,7 +358,7 @@ function handleFirstCultivation(state: GameState, payload: string): ActionRespon
 
 function handleTournament(state: GameState, payload: string): ActionResponse {
   let gained = 20
-  let opening = '你握紧木剑，踏上演武台。对面的韩厉抬手行礼，眼中却带着毫不掩饰的战意。'
+  let opening = '你握紧木剑，踏上演武台。对面的裴任抬手行礼，眼中却带着毫不掩饰的战意。'
 
   if (payload === 'observe_first') {
     state.player.attributes.perception += 1
@@ -461,7 +379,7 @@ function handleTournament(state: GameState, payload: string): ActionResponse {
     },
     {
       type: 'dialogue',
-      speaker: '玄清真人',
+      speaker: state.npcs.senior_brother.name,
       text: '胜负只是一时。今日你能守住本心，才算没有辜负这一个月的修行。',
     },
     {
@@ -483,10 +401,12 @@ function handleTournament(state: GameState, payload: string): ActionResponse {
 
 function handleFreeInput(state: GameState, payload: string): ActionResponse {
   const text = payload.trim()
-  const master = state.npcs.master
+  const interlocutor = state.world.flags.became_disciple
+    ? state.npcs.senior_brother
+    : state.npcs.master
   let intent = 'chat'
   let affinityChange = 0
-  let reply = '玄清真人看了你一眼，没有立刻回答。片刻后，他示意你继续说下去。'
+  let reply = `${interlocutor.name}看了你一眼，没有立刻回答。片刻后，示意你继续说下去。`
 
   if (/修炼|变强|功法|灵气/.test(text)) {
     intent = 'ask_cultivation'
@@ -506,7 +426,7 @@ function handleFreeInput(state: GameState, payload: string): ActionResponse {
     reply = '你放缓呼吸，注意到试炼场石阶上刻着聚灵纹，空气中的灵气正缓慢向测灵石汇聚。'
   }
 
-  changeAffinity(state, 'master', affinityChange)
+  changeAffinity(state, interlocutor.id, affinityChange)
   state.free_input_history.push({
     turn: state.turn_count,
     input_text: text,
@@ -515,8 +435,8 @@ function handleFreeInput(state: GameState, payload: string): ActionResponse {
     timestamp: new Date().toISOString(),
   })
   state.free_input_history = state.free_input_history.slice(-10)
-  master.dialogue_history.push(`玩家：${text}\n玄清真人：${reply}`)
-  master.dialogue_history = master.dialogue_history.slice(-5)
+  interlocutor.dialogue_history.push(`玩家：${text}\n${interlocutor.name}：${reply}`)
+  interlocutor.dialogue_history = interlocutor.dialogue_history.slice(-5)
 
   const segments: NarrativeSegment[] = [
     {
@@ -525,14 +445,14 @@ function handleFreeInput(state: GameState, payload: string): ActionResponse {
     },
     {
       type: affinityChange === 0 && intent === 'observe' ? 'narration' : 'dialogue',
-      speaker: affinityChange === 0 && intent === 'observe' ? undefined : '玄清真人',
+      speaker: affinityChange === 0 && intent === 'observe' ? undefined : interlocutor.name,
       text: reply,
     },
   ]
 
   addRecentEvent(state, text, segments.map((item) => item.text).join(''), {
     interpreted_intent: intent,
-    'npcs.master.affinity': affinityChange,
+    [`npcs.${interlocutor.id}.affinity`]: affinityChange,
   })
   return createResponse(state, segments, currentChoices, {
     thought: `自由输入意图识别为 ${intent}，好感度变化 ${affinityChange}。`,
@@ -551,15 +471,15 @@ export const mockApi = {
     const openingSegments: NarrativeSegment[] = [
       {
         type: 'narration',
-        text: '晨雾笼罩青云山门，悠远钟声穿过层层云海。你与数十名少年站在试炼场前，等待决定命运的一刻。',
+        text: '晨雾笼罩中洲城池，悠远钟声越过启灵台。你与数十名少年立在青石阶前，等待决定命运的一刻。',
       },
       {
         type: 'narration',
-        text: '试炼场中央，一块三尺高的青白色测灵石静静矗立。石旁的玄清真人目光如炬，正在逐一审视众人。',
+        text: '启灵台中央，一块三尺高的青白色测灵石静静矗立。石旁的启灵官手持玉简，正在逐一记录众人的资质。',
       },
       {
         type: 'dialogue',
-        speaker: '玄清真人',
+        speaker: '启灵官',
         text: `${currentState.player.name}，上前测试灵根。`,
       },
     ]
@@ -589,16 +509,12 @@ export const mockApi = {
     }
 
     switch (state.current_scene_id) {
-      case 'trial_grounds':
+      case 'awakening_ceremony':
         return handleTrialGrounds(state, request.payload)
       case 'trial_hesitate':
         return handleTrialHesitate(state, request.payload)
       case 'trial_result':
         return handleTrialResult(state, request.payload)
-      case 'master_qa':
-        return handleMasterQa(state, request.payload)
-      case 'master_selection':
-        return handleMasterSelection(state, request.payload)
       case 'first_cultivation':
         return handleFirstCultivation(state, request.payload)
       case 'sect_tournament':
@@ -613,8 +529,46 @@ export const mockApi = {
     }
   },
 
+  async saveGame(sessionId: string, label: string): Promise<SaveInfo> {
+    await wait(180)
+    if (!currentState || currentState.session_id !== sessionId) {
+      throw new Error('游戏会话不存在，请重新开始游戏。')
+    }
+    const info: SaveInfo = {
+      save_id: `save_${Date.now()}`,
+      label: label.trim() || `第 ${currentState.turn_count} 回合`,
+      saved_at: new Date().toISOString(),
+    }
+    mockSaves.push({ ...info, state: cloneState(currentState) })
+    return info
+  },
+
+  async getSaves(sessionId: string): Promise<SaveInfo[]> {
+    await wait(120)
+    if (!currentState || currentState.session_id !== sessionId) {
+      throw new Error('游戏会话不存在，请重新开始游戏。')
+    }
+    return mockSaves.map((save) => ({
+      save_id: save.save_id,
+      label: save.label,
+      saved_at: save.saved_at,
+    }))
+  },
+
+  async loadGame(sessionId: string, saveId: string): Promise<GameState> {
+    await wait(180)
+    if (!currentState || currentState.session_id !== sessionId) {
+      throw new Error('游戏会话不存在，请重新开始游戏。')
+    }
+    const save = mockSaves.find((item) => item.save_id === saveId)
+    if (!save) throw new Error('存档不存在。')
+    currentState = cloneState(save.state)
+    return cloneState(currentState)
+  },
+
   reset(): void {
     currentState = null
     currentChoices = []
+    mockSaves = []
   },
 }

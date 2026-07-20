@@ -3,6 +3,7 @@ interface GameHeaderProps {
   hasSession: boolean
   onRestart: () => void
   onToggleDebug: () => void
+  onOpenSaves: () => void
 }
 
 export function GameHeader({
@@ -10,6 +11,7 @@ export function GameHeader({
   hasSession,
   onRestart,
   onToggleDebug,
+  onOpenSaves,
 }: GameHeaderProps) {
   return (
     <header className="relative z-20 border-b border-amber-100/10 bg-[#08100e]/85 backdrop-blur-xl">
@@ -28,6 +30,13 @@ export function GameHeader({
 
           {hasSession && (
             <>
+              <button
+                type="button"
+                onClick={onOpenSaves}
+                className="rounded-lg border border-stone-100/10 px-3 py-2 text-xs text-stone-300 transition hover:border-stone-100/25 hover:text-white"
+              >
+                存档
+              </button>
               <button
                 type="button"
                 onClick={onToggleDebug}
