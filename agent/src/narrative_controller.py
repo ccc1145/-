@@ -1,16 +1,20 @@
 """Narrative Controller：Agent 层核心调度器。
 
 策划书 Day 5 任务：实现输出重试机制（3 次失败后降级）。
-Day 8 会扩展为完整 controller（含 OOC 检测、自由输入路由），当前先实现核心调度。
+Day 8 扩展为完整 controller：含 OOC 检测、自由输入路由。
 
 职责：
 1. 组装 system_prompt + user_prompt（委托 PromptBuilder）
 2. 调用 LLM（委托 NarrativeLLMAdapter）
 3. 解析输出（委托 AgentOutputParser）
-4. 失败重试（最多 3 次，含超时控制）
+4. 失败重试（最多 3 次，含超时控制 + 指数退避）
 5. 全部失败时降级（返回预设文案，保证游戏可运行）
+6. 自由输入处理（委托 FreeInputProcessor：意图分类 + OOC 检测 + 回应生成）
 
-输出对齐 docs/agent-io-format.md v0.1。
+Day 6-7 Polish：加指数退避重试间隔，更细日志级别
+Day 8：集成 FreeInputProcessor，新增 generate_free_input_response 方法
+
+输出对齐 docs/agent-io-format.md v1.0。
 """
 from __future__ import annotations
 
@@ -18,6 +22,7 @@ import logging
 import time
 from typing import Any
 
+from free_input_processor import FreeInputProcessor
 from llm_adapter import NarrativeLLMAdapter
 from parser import AgentOutputParser
 from prompt_builder import PromptBuilder
@@ -43,12 +48,26 @@ class NarrativeController:
         llm_adapter: NarrativeLLMAdapter,
         max_retries: int = 3,
         timeout: float = 30.0,
+        backoff_base: float = 0.5,
     ) -> None:
+        """
+        Args:
+            llm_adapter: LLM 适配器
+            max_retries: 最大重试次数
+            timeout: 单次 LLM 调用慢调用阈值（仅警告，不硬中断）
+            backoff_base: 指数退避基础秒数。重试间隔 = backoff_base * 2^(attempt-1)
+                         如 base=0.5 → 0.5s, 1s, 2s
+        """
         self._llm = llm_adapter
         self._parser = AgentOutputParser()
         self._prompt_builder = PromptBuilder()
+        self._free_input_processor = FreeInputProcessor(
+            llm_adapter=llm_adapter,
+            prompt_builder=self._prompt_builder,
+        )
         self.max_retries = max_retries
         self.timeout = timeout
+        self.backoff_base = backoff_base
 
     # ---- 场景叙事生成（核心入口）----
 
@@ -101,8 +120,20 @@ class NarrativeController:
         player_input: dict[str, Any],
         current_scene: dict[str, Any],
         dialogue_history: list[str],
+        npc_knowledge: list | None = None,
+        dialogue_examples: list | None = None,
+        world_book_context: str = "",
     ) -> dict[str, Any]:
         """生成 NPC 对话回应。
+
+        Args:
+            npc: NPC 角色卡 dict
+            player_input: 玩家输入 dict，含 text
+            current_scene: 当前场景 dict
+            dialogue_history: 对话历史 list[str]
+            npc_knowledge: Day 10 新增，NPC 掌握的知识列表（限制 NPC 只说自己知道的事）
+            dialogue_examples: Day 10 新增，对话示例列表（Few-shot 注入）
+            world_book_context: Day 10 新增，关键词触发的世界观知识文本
 
         Returns:
             含 response / emotion / internal_thought 的 dict，降级时带 degraded 标记。
@@ -112,12 +143,16 @@ class NarrativeController:
             player_input=player_input,
             current_scene=current_scene,
             dialogue_history=dialogue_history,
+            npc_knowledge=npc_knowledge,
+            dialogue_examples=dialogue_examples,
+            world_book_context=world_book_context,
         )
         # NPC 对话复用 system_prompt 的世界观设定，但当前场景和 NPC 信息已在 user_prompt 里
         system_prompt = self._prompt_builder.build_system_prompt(
             world_knowledge=get_all_world_knowledge(),
             current_scene=current_scene,
             npc_cards={npc.get("id", "npc"): npc} if npc else {},
+            world_book_context=world_book_context,
         )
 
         result = self._invoke_with_retry(
@@ -134,6 +169,87 @@ class NarrativeController:
         # 这里做格式归一化：把 response 包装成 narrative + segments + choices
         if not result.get("degraded"):
             result = self._normalize_dialogue_output(result, npc)
+        return result
+
+    # ---- 自由输入回应生成（Day 8 新增）----
+
+    def generate_free_input_response(
+        self,
+        *,
+        player_input: str,
+        game_state: dict[str, Any],
+        current_scene: dict[str, Any],
+        npc_cards: dict[str, Any],
+        memory: dict[str, Any],
+        use_llm_intent: bool = True,
+    ) -> dict[str, Any]:
+        """处理玩家自由输入，生成回应。
+
+        流程（对齐策划书 3.2.2 节）：
+            Step 1: 意图分类（离线关键词 or LLM 精细分类）
+            Step 2: OOC 检测
+            Step 3: 构建回应 Prompt，调用 LLM 生成叙事
+
+        Args:
+            player_input: 玩家自由输入的原始文本
+            game_state: GameState v1.0
+            current_scene: 当前场景 dict
+            npc_cards: 在场 NPC 角色卡 dict
+            memory: 记忆上下文 dict
+            use_llm_intent: True 用 LLM 分类（更准但慢），False 用离线关键词分类（快）
+
+        Returns:
+            符合 docs/agent-io-format.md 的 dict，额外带 intent 和 is_ooc 字段
+        """
+        # Step 1: 意图分类
+        if use_llm_intent and self._llm and not self._llm.is_fake:
+            npc_name = ",".join(n.get("name", "") for n in npc_cards.values()) if npc_cards else ""
+            intent = self._free_input_processor.classify_intent_llm(
+                text=player_input,
+                npc_name=npc_name,
+                scene_name=current_scene.get("name", ""),
+            )
+        else:
+            intent = self._free_input_processor.classify_intent_offline(player_input)
+        logger.info("自由输入意图分类: %s (method=%s, confidence=%.2f)",
+                    intent.get("intent"), intent.get("method"), intent.get("confidence", 0))
+
+        # Step 2: OOC 检测
+        is_ooc, ooc_reason = self._free_input_processor.detect_ooc(player_input)
+        if is_ooc:
+            logger.info("OOC 检测命中: %s", ooc_reason)
+
+        # Step 3: 构建回应 Prompt 并调用 LLM
+        system_prompt = self._prompt_builder.build_system_prompt(
+            world_knowledge=get_all_world_knowledge(),
+            current_scene=current_scene,
+            npc_cards=npc_cards,
+        )
+        user_prompt = self._free_input_processor.build_response_prompt(
+            player_input=player_input,
+            intent=intent,
+            game_state=game_state,
+            current_scene=current_scene,
+            npc_cards=npc_cards,
+            memory=memory,
+            is_ooc=is_ooc,
+            ooc_reason=ooc_reason,
+        )
+
+        result = self._invoke_with_retry(
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+            scene_id=current_scene.get("id", "default"),
+            fallback_context={
+                "scene_id": current_scene.get("id", "default"),
+                "player_name": game_state.get("player", {}).get("name", "道友"),
+            },
+        )
+        # 附加意图和 OOC 信息供后端使用
+        result["intent"] = intent
+        result["is_ooc"] = is_ooc
+        if is_ooc:
+            result["ooc_reason"] = ooc_reason
         return result
 
     @staticmethod
@@ -215,6 +331,11 @@ class NarrativeController:
 
         for attempt in range(1, self.max_retries + 1):
             attempt_tag = f"[attempt {attempt}/{self.max_retries}]"
+            # 指数退避（第一次不等待）
+            if attempt > 1 and self.backoff_base > 0:
+                wait_sec = self.backoff_base * (2 ** (attempt - 2))
+                logger.info("%s 退避 %.2fs 后重试", attempt_tag, wait_sec)
+                time.sleep(wait_sec)
             try:
                 start = time.time()
                 logger.info("%s 调用 LLM...", attempt_tag)

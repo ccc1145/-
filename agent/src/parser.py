@@ -6,9 +6,15 @@
     3. 失败 -> 用正则提取花括号包裹的内容
     4. 全部失败 -> 返回降级响应（保持游戏可运行）
 
-输出格式对齐 docs/agent-io-format.md v0.1。
+输出格式对齐 docs/agent-io-format.md v1.0。
 
-Day 4 实现：基础解析 + 降级；Day 12 增强：更多提取策略 + 内容安全过滤。
+Day 4 实现：基础解析 + 降级
+Day 6-7 Polish 增强：
+  - 字段名大小写归一化（LLM 偶尔返回 Narrative 而非 narrative）
+  - 中文标点转英文（"" '' ，）
+  - narrative 为 list 时的合并处理
+  - 花括号提取改为平衡匹配，避免嵌套 JSON 被截断
+  - 单引号 JSON 容错（部分 LLM 用单引号）
 """
 from __future__ import annotations
 
@@ -22,6 +28,27 @@ _FALLBACK_CHOICES = [
     {"id": "continue", "text": "继续"},
     {"id": "retry", "text": "重新尝试"},
 ]
+
+# 字段名归一化映射（处理 LLM 返回的大小写/下划线变体）
+# 归一化策略：key 转小写 + 驼峰转下划线后匹配（更稳健）
+_FIELD_ALIASES = {
+    "narrative": ["narrative", "story", "text"],
+    "narrative_segments": ["narrative_segments", "segments"],
+    "available_choices": ["available_choices", "choices", "options"],
+    "free_input_enabled": ["free_input_enabled", "allow_free_input"],
+    "thought": ["thought", "reasoning", "internal_thought"],
+    "degraded": ["degraded"],
+    "parse_failed": ["parse_failed"],
+}
+
+# 中文标点 -> 英文标点（JSON 解析前预处理）
+_PUNCT_MAP = {
+    "\u201c": '"',  # "
+    "\u201d": '"',  # "
+    "\u2018": "'",  # '
+    "\u2019": "'",  # '
+    "\u3001": ",",  # 、（仅限 JSON 内部，这里保守只替换引号）
+}
 
 
 class AgentOutputParser:
@@ -95,17 +122,47 @@ class AgentOutputParser:
             return None
 
     def _try_brace_extraction(self, text: str) -> dict[str, Any] | None:
-        """策略 3：正则提取最外层花括号包裹的内容。
+        r"""策略 3：平衡花括号匹配，提取最外层完整的 JSON 对象。
 
-        贪婪匹配从第一个 `{` 到最后一个 `}`，适合 LLM 在 JSON 前后附加说明文字的场景。
+        旧版用贪婪正则 `\{.*\}`，遇到 JSON 前后有干扰的 `{}` 会被截断。
+        新版改为扫描计数，找到第一个平衡的 `{...}` 块。
         """
-        match = re.search(r"\{.*\}", text, re.DOTALL)
-        if not match:
+        start = text.find("{")
+        if start == -1:
             return None
-        try:
-            return json.loads(match.group(0))
-        except (json.JSONDecodeError, TypeError):
-            return None
+        depth = 0
+        in_string = False
+        escape = False
+        for i in range(start, len(text)):
+            ch = text[i]
+            if escape:
+                escape = False
+                continue
+            if ch == "\\":
+                escape = True
+                continue
+            if ch == '"':
+                in_string = not in_string
+                continue
+            if in_string:
+                continue
+            if ch == "{":
+                depth += 1
+            elif ch == "}":
+                depth -= 1
+                if depth == 0:
+                    candidate = text[start : i + 1]
+                    # 先做标点清洗
+                    cleaned = self._normalize_punctuation(candidate)
+                    try:
+                        return json.loads(cleaned)
+                    except (json.JSONDecodeError, TypeError):
+                        # 尝试单引号容错
+                        try:
+                            return json.loads(cleaned.replace("'", '"'))
+                        except (json.JSONDecodeError, TypeError):
+                            return None
+        return None
 
     # ---- 字段校验与补全 ----
 
@@ -117,6 +174,9 @@ class AgentOutputParser:
         - narrative / narrative_segments 至少一个
         - narrative_segments 中 type=dialogue 时 speaker 必填
         """
+        # 字段名归一化（处理 Narrative / narrativeSegments 等大小写变体）
+        data = self._normalize_field_names(data)
+
         # available_choices 缺失或非法：补一个兜底
         choices = data.get("available_choices")
         if not isinstance(choices, list) or not choices:
@@ -138,7 +198,11 @@ class AgentOutputParser:
             data["narrative"] = "（叙事生成异常，请重试）"
             data["parse_failed"] = True
         elif narrative and not isinstance(narrative, str):
-            data["narrative"] = str(narrative)
+            # narrative 为 list（部分 LLM 会返回段落数组）-> 合并为一段
+            if isinstance(narrative, list):
+                data["narrative"] = "\n".join(str(x) for x in narrative if x)
+            else:
+                data["narrative"] = str(narrative)
 
         # narrative_segments 字段校验
         if isinstance(segments, list):
@@ -158,6 +222,49 @@ class AgentOutputParser:
             data["narrative_segments"] = cleaned_segs
 
         return data
+
+    # ---- 辅助方法 ----
+
+    @staticmethod
+    def _normalize_punctuation(text: str) -> str:
+        """中文引号转英文引号，避免 JSON 解析失败。"""
+        for cn, en in _PUNCT_MAP.items():
+            text = text.replace(cn, en)
+        return text
+
+    @staticmethod
+    def _normalize_field_names(data: dict[str, Any]) -> dict[str, Any]:
+        """字段名归一化：把 LLM 返回的变体名映射到标准名。
+
+        策略：把 key 转小写 + 驼峰转下划线，然后与别名表（已转小写）匹配。
+        例如 Narrative -> narrative, narrativeSegments -> narrative_segments,
+                 AvailableChoices -> available_choices
+        只处理顶层字段，不递归。
+        """
+        result = {}
+        for key, value in data.items():
+            normalized_key = AgentOutputParser._to_snake_case(key)
+            matched = False
+            for standard, aliases in _FIELD_ALIASES.items():
+                # 别名也转 snake_case 后比较
+                alias_set = {AgentOutputParser._to_snake_case(a) for a in aliases}
+                if normalized_key in alias_set or normalized_key == standard:
+                    result[standard] = value
+                    matched = True
+                    break
+            if not matched:
+                result[key] = value
+        return result
+
+    @staticmethod
+    def _to_snake_case(s: str) -> str:
+        """驼峰转下划线：narrativeSegments -> narrative_segments。
+        同时处理大写开头：Narrative -> narrative。
+        """
+        # 先转小写驼峰为下划线
+        import re as _re
+        s = _re.sub(r"(?<!^)(?=[A-Z])", "_", s).lower()
+        return s
 
     # ---- 降级响应 ----
 

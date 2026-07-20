@@ -1,35 +1,37 @@
-{# 场景叙事模板：根据 GameState v1.0 + 玩家操作，生成这一轮的叙事文本。
-   GameState 字段对齐 docs/gamestate-schema.md v1.0（由人员B锁定）。 #}
-【游戏状态】（GameState v1.0）
-玩家：{{ game_state.player.name }}（{{ game_state.player.gender }}）
-灵根：{{ game_state.player.spiritual_root }}
-修为：{{ game_state.player.cultivation }}（经验 {{ game_state.player.cultivation_exp }}）
-气血：{{ game_state.player.hp }}/{{ game_state.player.max_hp }}
-法力：{{ game_state.player.mp }}/{{ game_state.player.max_mp }}
+{# 场景叙事模板：根据 GameState + 玩家操作，生成这一轮的叙事文本。
+
+字段对齐 docs/gamestate-schema.md v1.0（人员B锁定版，origin/backend/dev 分支）：
+- player: name/gender/spiritual_root(字符串)/cultivation/cultivation_exp
+          hp/max_hp/mp/max_mp/spirit_stones/inventory/skills
+- world:  current_scene_id/flags/npc_affinity
+- 顶层:   session_id/turn_count/narrative/available_choices/recent_events
+
+v1.0 相比策划书 4.1 草案的关键变更：
+- 删除 realm（境界）对象 → 境界感由 cultivation 数值 + 世界观知识体现
+- 删除 attributes（四维属性）对象
+- 删除 spirit_root 对象 → 改为 spiritual_root 纯字符串（品质由文字描述体现）
+- 删除独立 npcs 对象 → 好感度并入 world.npc_affinity
+- 新增 hp/mp/spirit_stones/skills 等战斗与经济字段
+#}
+【游戏状态】
+玩家：{{ game_state.player.name }}（{{ game_state.player.gender | default("男") }}）
+修为：{{ game_state.player.cultivation }}（经验 {{ game_state.player.cultivation_exp | default(0) }}）
+灵根：{{ game_state.player.spiritual_root | default("未测") }}
+气血：{{ game_state.player.hp | default(100) }}/{{ game_state.player.max_hp | default(100) }}
+{% if game_state.player.max_mp -%}
+法力：{{ game_state.player.mp | default(0) }}/{{ game_state.player.max_mp }}
+{% endif -%}
+{% if game_state.player.spirit_stones -%}
 灵石：{{ game_state.player.spirit_stones }}
-{% if game_state.player.inventory %}
-随身物品：
-{% for item in game_state.player.inventory -%}
-- {{ item.name }} ×{{ item.count }}
-{% endfor %}
-{% endif %}
-{% if game_state.player.skills %}
+{% endif -%}
+{% if game_state.player.skills -%}
 已学功法：{{ game_state.player.skills | join("、") }}
-{% endif %}
+{% endif -%}
 
 【世界状态】
-当前场景：{{ game_state.world.current_scene_id }}
-{% if game_state.world.flags %}
-剧情标记：
-{% for flag, value in game_state.world.flags.items() -%}
-- {{ flag }}: {{ value }}
-{% endfor %}
-{% endif %}
-{% if game_state.world.npc_affinity %}
-NPC 好感度：
-{% for npc_id, affinity in game_state.world.npc_affinity.items() -%}
-- {{ npc_id }}: {{ affinity }}
-{% endfor %}
+场景：{{ game_state.world.current_scene_id | default("start") }}
+{% if game_state.world.npc_affinity -%}
+NPC 好感：{% for npc_id, aff in game_state.world.npc_affinity.items() -%}{{ npc_id }}={{ aff }}{% if not loop.last %}，{% endif %}{% endfor %}
 {% endif %}
 
 【玩家操作】
@@ -55,7 +57,7 @@ NPC 好感度：
 
 请生成本轮叙事，要求：
 1. 自然融入上述状态变化，不要让玩家感觉"突然跳数值"。
-2. 如果有 NPC 出场，对话必须符合其性格和当前好感度。
+2. 如果有 NPC 出场，对话必须符合其性格，且好感度（world.npc_affinity）不同态度必须明显不同。
 3. 如果好感度变化了，通过 NPC 的态度微妙变化体现。
 4. 提供 2-4 个下一步可选操作。
 
