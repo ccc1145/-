@@ -14,7 +14,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000
 
 const http = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 15000,
+  timeout: 60000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -78,6 +78,7 @@ export const gameApi = {
 
   async saveGame(sessionId: string, label: string): Promise<SaveInfo> {
     try {
+      if (USE_MOCK) return await mockApi.saveGame(sessionId, label)
       const response = await http.post<SaveInfo>(`/session/${sessionId}/save`, { label })
       return response.data
     } catch (error) {
@@ -87,6 +88,7 @@ export const gameApi = {
 
   async getSaves(sessionId: string): Promise<SaveInfo[]> {
     try {
+      if (USE_MOCK) return await mockApi.getSaves(sessionId)
       const response = await http.get<{ saves: SaveInfo[] }>(`/session/${sessionId}/saves`)
       return response.data.saves
     } catch (error) {
@@ -96,6 +98,7 @@ export const gameApi = {
 
   async loadGame(sessionId: string, saveId: string): Promise<GameState> {
     try {
+      if (USE_MOCK) return await mockApi.loadGame(sessionId, saveId)
       const response = await http.post<{ state: GameState }>(`/session/${sessionId}/load`, {
         save_id: saveId,
       })

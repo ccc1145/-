@@ -5,9 +5,10 @@ interface TextDisplayProps {
   segments: NarrativeSegment[]
   isLoading: boolean
   gameOver: boolean
+  degraded: boolean
 }
 
-export function TextDisplay({ segments, isLoading, gameOver }: TextDisplayProps) {
+export function TextDisplay({ segments, isLoading, gameOver, degraded }: TextDisplayProps) {
   const contentKey = useMemo(() => JSON.stringify(segments), [segments])
 
   return (
@@ -16,11 +17,12 @@ export function TextDisplay({ segments, isLoading, gameOver }: TextDisplayProps)
       segments={segments}
       isLoading={isLoading}
       gameOver={gameOver}
+      degraded={degraded}
     />
   )
 }
 
-function TypingTextDisplay({ segments, isLoading, gameOver }: TextDisplayProps) {
+function TypingTextDisplay({ segments, isLoading, gameOver, degraded }: TextDisplayProps) {
   const totalCharacters = useMemo(
     () => segments.reduce((total, segment) => total + segment.text.length, 0),
     [segments],
@@ -79,6 +81,11 @@ function TypingTextDisplay({ segments, isLoading, gameOver }: TextDisplayProps) 
       </div>
 
       <div className="relative flex-1 space-y-5 overflow-y-auto pr-1 text-[15px] leading-8 text-stone-200 sm:text-base sm:leading-9">
+        {degraded && (
+          <div className="rounded-lg border border-amber-300/20 bg-amber-200/[0.06] px-3 py-2 text-xs leading-5 text-amber-100/70">
+            叙事服务暂时降级，本回合已使用备用内容，游戏状态不受影响。
+          </div>
+        )}
         {displayedSegments.map((segment, index) => {
           if (!segment.text) return null
 

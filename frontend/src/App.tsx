@@ -4,6 +4,7 @@ import { DebugPanel } from './components/DebugPanel'
 import { ErrorNotice } from './components/ErrorNotice'
 import { FreeInputBox } from './components/FreeInputBox'
 import { GameHeader } from './components/GameHeader'
+import { SavePanel } from './components/SavePanel'
 import { StartGamePanel } from './components/StartGamePanel'
 import { StatusPanel } from './components/StatusPanel'
 import { TextDisplay } from './components/TextDisplay'
@@ -18,13 +19,20 @@ function App() {
   const error = useGameStore((state) => state.error)
   const gameOver = useGameStore((state) => state.gameOver)
   const agentThought = useGameStore((state) => state.agentThought)
+  const degraded = useGameStore((state) => state.degraded)
   const debugVisible = useGameStore((state) => state.debugVisible)
+  const saves = useGameStore((state) => state.saves)
+  const savePanelVisible = useGameStore((state) => state.savePanelVisible)
   const startGame = useGameStore((state) => state.startGame)
   const chooseAction = useGameStore((state) => state.chooseAction)
   const sendFreeInput = useGameStore((state) => state.sendFreeInput)
   const restartGame = useGameStore((state) => state.restartGame)
   const clearError = useGameStore((state) => state.clearError)
   const toggleDebug = useGameStore((state) => state.toggleDebug)
+  const openSavePanel = useGameStore((state) => state.openSavePanel)
+  const closeSavePanel = useGameStore((state) => state.closeSavePanel)
+  const saveGame = useGameStore((state) => state.saveGame)
+  const loadGame = useGameStore((state) => state.loadGame)
 
   return (
     <div className="app-shell min-h-screen text-stone-100">
@@ -37,9 +45,20 @@ function App() {
         hasSession={Boolean(gameState)}
         onRestart={restartGame}
         onToggleDebug={toggleDebug}
+        onOpenSaves={() => void openSavePanel()}
       />
 
       {error && <ErrorNotice message={error} onClose={clearError} />}
+
+      {savePanelVisible && (
+        <SavePanel
+          saves={saves}
+          isLoading={isLoading}
+          onClose={closeSavePanel}
+          onSave={saveGame}
+          onLoad={loadGame}
+        />
+      )}
 
       {!gameState ? (
         <StartGamePanel isLoading={isLoading} onStart={startGame} />
@@ -50,6 +69,7 @@ function App() {
               segments={narrativeSegments}
               isLoading={isLoading}
               gameOver={gameOver}
+              degraded={degraded}
             />
             <ChoicePanel
               choices={availableChoices}

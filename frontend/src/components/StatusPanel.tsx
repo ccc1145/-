@@ -12,6 +12,14 @@ function affinityText(value: number): string {
   return '平常'
 }
 
+function sectText(flags: Record<string, boolean>): string {
+  if (flags.sect_chosen_xuanqing) return '玄清宗 · 外门弟子'
+  if (flags.sect_chosen_shenwu) return '神武门 · 外门弟子'
+  if (flags.sect_chosen_fulong) return '扶龙宫 · 外门弟子'
+  if (flags.sect_chosen_hongchen) return '红尘阁 · 外门弟子'
+  return '中洲 · 待启灵者'
+}
+
 export function StatusPanel({ state }: StatusPanelProps) {
   const { player, world, npcs } = state
   const currentLevelStart = (player.realm.minor - 1) * 90
@@ -26,7 +34,7 @@ export function StatusPanel({ state }: StatusPanelProps) {
           </div>
           <div>
             <h2 className="font-serif text-lg tracking-[0.15em] text-amber-50">{player.name}</h2>
-            <p className="mt-1 text-xs text-stone-500">青云门 · 记名弟子</p>
+            <p className="mt-1 text-xs text-stone-500">{sectText(world.flags)}</p>
           </div>
         </div>
 
