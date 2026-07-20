@@ -1,0 +1,75 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "item.schema.json",
+  "title": "物品配置 Schema",
+  "description": "定义物品属性、效果、获取途径的结构规范",
+  "type": "object",
+  "required": ["item_id", "name", "type", "description"],
+  "properties": {
+    "item_id": {
+      "type": "string",
+      "description": "物品唯一标识符",
+      "pattern": "^[a-z][a-z0-9_]*$"
+    },
+    "name": {
+      "type": "string",
+      "description": "物品显示名称"
+    },
+    "type": {
+      "type": "string",
+      "description": "物品类型",
+      "enum": ["consumable", "equipment", "material", "key_item", "currency", "skill_book"]
+    },
+    "description": {
+      "type": "string",
+      "description": "物品描述"
+    },
+    "rarity": {
+      "type": "string",
+      "description": "稀有度",
+      "enum": ["common", "uncommon", "rare", "epic", "legendary"],
+      "default": "common"
+    },
+    "stackable": {
+      "type": "boolean",
+      "description": "是否可堆叠",
+      "default": true
+    },
+    "max_stack": {
+      "type": "integer",
+      "description": "最大堆叠数量",
+      "default": 999
+    },
+    "effects": {
+      "type": "array",
+      "description": "物品使用效果",
+      "items": {
+        "type": "object",
+        "required": ["type", "value"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["restore_hp", "restore_mp", "boost_cultivation", "boost_attribute", "boost_affinity", "cure_status", "learn_skill"]
+          },
+          "target": { "type": "string", "description": "效果目标属性" },
+          "value": { "type": "number", "description": "效果数值" },
+          "duration": { "type": "integer", "description": "持续时间（回合数，0 表示永久）" },
+          "description": { "type": "string", "description": "效果描述" }
+        }
+      }
+    },
+    "price": {
+      "type": "integer",
+      "description": "购买价格（灵石）",
+      "default": 0
+    },
+    "required_realm": {
+      "type": "object",
+      "description": "使用要求的境界",
+      "properties": {
+        "major": { "type": "string" },
+        "minor": { "type": "integer" }
+      }
+    }
+  }
+}

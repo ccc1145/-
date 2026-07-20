@@ -1,0 +1,151 @@
+# 物品配置：扶龙宫特色物品
+# 皇室学府——奢华资源、龙脉特产、策论典籍、礼仪器物
+- item_id: "fulong_robe"
+  name: "宫制锦袍"
+  type: "equipment"
+  description: "扶龙宫弟子制式锦袍，以金丝银线织就，领口绣有龙纹图案。布料中织入了龙脉灵气滋养过的灵蚕丝，穿着可小幅加速灵气运转。"
+  rarity: "common"
+  stackable: false
+  effects:
+    - type: "boost_attribute"
+      target: "spirit_power"
+      value: 8
+      description: "略微提升灵气感应和运转速度"
+  price: 200
+
+- item_id: "huangji_jingdian_copy"
+  name: "《皇极惊世典》基础篇抄本"
+  type: "skill_book"
+  description: "扶龙宫核心功法的入门部分，记载从炼气至筑基的基础修炼法门。外姓弟子可习得此卷，中卷以上仅宗室可学。"
+  rarity: "common"
+  stackable: false
+  effects:
+    - type: "learn_skill"
+      target: "fulong_cultivation"
+      value: 1
+      description: "习得扶龙宫基础修炼法门"
+  price: 0
+
+- item_id: "dragon_vein_tea"
+  name: "龙脉灵茶"
+  type: "consumable"
+  description: "以化龙池周围灵田种植的龙须茶叶泡制，茶汤呈淡金色。饮后灵气自丹田升腾，久久不散。宫中弟子每月限量配给。"
+  rarity: "uncommon"
+  stackable: true
+  max_stack: 10
+  effects:
+    - type: "boost_cultivation"
+      target: "player.cultivation"
+      value: 35
+      description: "饮用后灵气持续升腾，提升修炼效率"
+  price: 80
+
+- item_id: "dragon_pool_token"
+  name: "化龙池令牌"
+  type: "key_item"
+  description: "进入化龙池的专用令牌，由宫主或皇帝亲赐。持令者可在限定时间内进入化龙池洗练灵根。非立大功者不可得。"
+  rarity: "epic"
+  stackable: false
+  effects:
+    - type: "boost_attribute"
+      target: "spirit_power"
+      value: 100
+      description: "在化龙池中洗练可大幅提升灵根资质"
+  price: 5000
+
+- item_id: "golden_spirit_wine"
+  name: "金桂灵酒"
+  type: "consumable"
+  description: "宫中御酿，以百年金桂和多种灵果酿制而成。酒液透亮如琥珀，饮后灵力充盈全身。非节庆日不得畅饮。"
+  rarity: "uncommon"
+  stackable: true
+  max_stack: 5
+  effects:
+    - type: "restore_mp"
+      value: 100
+      description: "快速恢复大量灵力"
+  price: 120
+
+- item_id: "strategy_essays"
+  name: "《策论精要》"
+  type: "skill_book"
+  description: "扶龙宫历代策论考题的精选汇编，附有教习点评。外宫弟子备考必备，但书上教的答题思路与实际朝堂的运转方式往往相去甚远。"
+  rarity: "common"
+  stackable: false
+  effects:
+    - type: "learn_skill"
+      target: "fulong_strategy"
+      value: 1
+      description: "习得扶龙宫策论基本思路"
+  price: 30
+
+- item_id: "secret_order_scroll"
+  name: "密令卷轴"
+  type: "key_item"
+  description: "一份封有灵力印记的空白卷轴，可用于传递加密信息或记载不宜示人的内容。扶龙宫烛龙卫专用。"
+  rarity: "common"
+  stackable: true
+  max_stack: 5
+  effects: []
+  price: 50
+
+- item_id: "dragon_blood_pill"
+  name: "龙血丹"
+  type: "consumable"
+  description: "以化龙池水为引炼制的高阶丹药，药力极强，可洗练经脉、强化灵根。宗室核心子弟才有机会获得。"
+  rarity: "rare"
+  stackable: true
+  max_stack: 3
+  effects:
+    - type: "boost_attribute"
+      target: "spirit_power"
+      value: 30
+      description: "永久性提升灵根资质"
+  price: 800
+  required_realm:
+    major: "金丹"
+    minor: 1
+
+- item_id: "candle_dragon_guard_pass"
+  name: "烛龙卫通行令"
+  type: "key_item"
+  description: "刻有烛龙图腾的青铜令牌，持令者可在扶龙宫大部分区域自由通行，包括潜龙阁四层以下。内宫弟子标配。"
+  rarity: "uncommon"
+  stackable: false
+  effects: []
+  price: 0
+
+- item_id: "rite_official_robe"
+  name: "祭祀礼服"
+  type: "equipment"
+  description: "扶龙宫重大典礼时穿着的正装礼服，以锦缎精制而成，饰以玉带和金扣。穿脱繁琐但极为庄重。"
+  rarity: "common"
+  stackable: false
+  effects: []
+  price: 150
+
+- item_id: "li_yin_handbook"
+  name: "靖龙王手札（残页）"
+  type: "key_item"
+  description: "一张泛黄的纸页，上面是靖龙王李胤亲笔写下的几句话。字迹刚劲有力，内容涉及对《皇极惊世典》的真实评价。徐伯潜书房暗格中所藏。"
+  rarity: "epic"
+  stackable: false
+  effects:
+    - type: "learn_skill"
+      target: "li_yin_insight"
+      value: 1
+      description: "阅读后获得靖龙王李胤的修炼感悟"
+  price: 0
+
+- item_id: "bai_zhan_qiang_jue_copy"
+  name: "《百战枪诀》抄本（残篇）"
+  type: "skill_book"
+  description: "靖龙王李胤所创枪法的抄录残篇，以武卫道的杀伐之术。宁怀璟偷偷修习的正是此卷的内容。"
+  rarity: "rare"
+  stackable: false
+  effects:
+    - type: "learn_skill"
+      target: "bai_zhan_spear"
+      value: 1
+      description: "习得百战枪诀残篇"
+  price: 800

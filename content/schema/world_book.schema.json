@@ -1,0 +1,116 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "world_book.schema.json",
+  "title": "世界书知识库 Schema",
+  "description": "定义世界观知识碎片的结构，支持动态关键词触发注入 Agent Prompt",
+  "type": "object",
+  "required": ["book_id", "name", "entries"],
+  "properties": {
+    "book_id": {
+      "type": "string",
+      "description": "知识库唯一标识符",
+      "pattern": "^[a-z][a-z0-9_]*$"
+    },
+    "name": {
+      "type": "string",
+      "description": "知识库显示名称"
+    },
+    "description": {
+      "type": "string",
+      "description": "知识库描述"
+    },
+    "entries": {
+      "type": "array",
+      "description": "知识碎片条目列表",
+      "items": {
+        "type": "object",
+        "required": ["entry_id", "keys", "content"],
+        "properties": {
+          "entry_id": {
+            "type": "string",
+            "description": "条目唯一标识符"
+          },
+          "name": {
+            "type": "string",
+            "description": "条目名称"
+          },
+          "keys": {
+            "type": "array",
+            "description": "触发关键词列表（主关键词）。当对话/场景/玩家输入中包含任意关键词时，该条目被激活",
+            "minItems": 1,
+            "items": { "type": "string" }
+          },
+          "secondary_keys": {
+            "type": "array",
+            "description": "次关键词列表。配合 logic 使用",
+            "items": { "type": "string" }
+          },
+          "logic": {
+            "type": "string",
+            "description": "选择性逻辑",
+            "enum": ["any_key", "all_keys", "secondary_required", "secondary_excluded"],
+            "default": "any_key"
+          },
+          "content": {
+            "type": "string",
+            "description": "知识内容。匹配成功后注入到 Agent Prompt"
+          },
+          "category": {
+            "type": "string",
+            "description": "知识分类，影响注入位置",
+            "enum": ["world_lore", "npc_lore", "rule_knowledge", "event_effect", "location_info"],
+            "default": "world_lore"
+          },
+          "weight": {
+            "type": "integer",
+            "description": "权重（1-1000），影响注入排序和优先级",
+            "minimum": 1,
+            "maximum": 1000,
+            "default": 100
+          },
+          "scan_depth": {
+            "type": "integer",
+            "description": "扫描深度：检查最近多少条对话。0=只检查当前输入",
+            "minimum": 0,
+            "maximum": 50,
+            "default": 4
+          },
+          "sticky": {
+            "type": "integer",
+            "description": "粘性：激活后持续多少轮对话。0=不持续",
+            "minimum": 0,
+            "maximum": 50,
+            "default": 0
+          },
+          "cooldown": {
+            "type": "integer",
+            "description": "冷却：激活后多少轮内不再触发。0=无冷却",
+            "minimum": 0,
+            "maximum": 50,
+            "default": 0
+          },
+          "probability": {
+            "type": "number",
+            "description": "触发概率（0-1）",
+            "minimum": 0,
+            "maximum": 1,
+            "default": 1
+          },
+          "position": {
+            "type": "string",
+            "description": "注入位置",
+            "enum": ["before_system", "after_system", "before_scene", "after_scene"],
+            "default": "after_scene"
+          },
+          "max_tokens": {
+            "type": "integer",
+            "description": "该条目最大 Token 数，超出则截断",
+            "minimum": 10,
+            "maximum": 2000,
+            "default": 200
+          }
+        }
+      }
+    }
+  }
+}

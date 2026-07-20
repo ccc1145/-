@@ -1,0 +1,30 @@
+# 小事件：修炼契机
+# 修炼类——修炼中出现异常/突破契机
+event_id: "sect_practice"
+name: "修炼中的意外收获"
+type: "minor"
+difficulty: 3
+tags: ["修炼", "突破", "风险"]
+
+trigger_conditions:
+  - type: "flag_check"
+    required_flags: ["trial_completed"]
+  - type: "attribute_check"
+    required_attributes:
+      - attribute: "player.cultivation"
+        min_value: 50
+
+free_narrative_hints:
+  - "玩家在独自修炼时发现体内灵气运转出现异常——可能是一个瓶颈松动、某条经脉意外贯通、或是对某个术法有了新的领悟"
+  - "这次异常的结果不是预设的：可能是修为突破（正面），也可能是走火入魔的迹象（负面），取决于玩家的应对方式"
+  - "如果玩家选择谨慎引导，可安全获得少量稳定的修为增益"
+  - "如果玩家选择冒险冲击更高境界，高概率获得较大增益但有走火入魔的风险"
+  - "如果玩家选择停止修炼去找人求助，可能遇到同门或教习指导，获得额外指点"
+  - "Agent 根据玩家的选择和当前状态综合判定事件结果"
+
+scenes:
+  entry:
+    scene_id: "entry"
+    name: "灵气异动"
+    description: "你盘膝运功，真气在经脉中流转。忽然间，你感到丹田处传来一阵异样的震动——一股不受控制的灵气在体内横冲直撞。"
+    free_input_enabled: true

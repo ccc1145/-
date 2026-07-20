@@ -1,0 +1,25 @@
+# 小事件：宗门杂务
+# 宗门生活类——执事安排日常任务
+event_id: "sect_task"
+name: "宗门杂务"
+type: "minor"
+difficulty: 2
+tags: ["宗门", "任务", "日常"]
+
+trigger_conditions:
+  - type: "flag_check"
+    required_flags: ["trial_completed"]
+
+free_narrative_hints:
+  - "某位执事或年长弟子找到玩家，安排一项日常杂务——整理藏经阁的书架、清理灵田杂草、运送一批物资到某处、帮忙修缮一处阵法节点等"
+  - "任务本身不危险但需要时间和精力，完成后可获得少量灵石或丹药作为报酬"
+  - "玩家可以选择接受（完成后获得奖励）、推脱（降低该执事好感）、或讨价还价（可能获得更好的报酬也可能惹恼对方）"
+  - "如果接受，Agent 描述任务过程。过程中可能随机遇到有趣的小插曲——发现藏经阁有本旧书夹了张古页、灵田里长了株奇特的灵植等"
+  - "任务完成后 Agent 判定奖励高低，如果玩家表现认真奖励可能略微上浮"
+
+scenes:
+  entry:
+    scene_id: "entry"
+    name: "有人找你"
+    description: "你正要去做自己的事，一个执事模样的修士叫住了你，上下打量了一番。"
+    free_input_enabled: true

@@ -120,8 +120,20 @@ class NarrativeController:
         player_input: dict[str, Any],
         current_scene: dict[str, Any],
         dialogue_history: list[str],
+        npc_knowledge: list | None = None,
+        dialogue_examples: list | None = None,
+        world_book_context: str = "",
     ) -> dict[str, Any]:
         """生成 NPC 对话回应。
+
+        Args:
+            npc: NPC 角色卡 dict
+            player_input: 玩家输入 dict，含 text
+            current_scene: 当前场景 dict
+            dialogue_history: 对话历史 list[str]
+            npc_knowledge: Day 10 新增，NPC 掌握的知识列表（限制 NPC 只说自己知道的事）
+            dialogue_examples: Day 10 新增，对话示例列表（Few-shot 注入）
+            world_book_context: Day 10 新增，关键词触发的世界观知识文本
 
         Returns:
             含 response / emotion / internal_thought 的 dict，降级时带 degraded 标记。
@@ -131,12 +143,16 @@ class NarrativeController:
             player_input=player_input,
             current_scene=current_scene,
             dialogue_history=dialogue_history,
+            npc_knowledge=npc_knowledge,
+            dialogue_examples=dialogue_examples,
+            world_book_context=world_book_context,
         )
         # NPC 对话复用 system_prompt 的世界观设定，但当前场景和 NPC 信息已在 user_prompt 里
         system_prompt = self._prompt_builder.build_system_prompt(
             world_knowledge=get_all_world_knowledge(),
             current_scene=current_scene,
             npc_cards={npc.get("id", "npc"): npc} if npc else {},
+            world_book_context=world_book_context,
         )
 
         result = self._invoke_with_retry(

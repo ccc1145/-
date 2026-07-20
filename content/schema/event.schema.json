@@ -1,0 +1,219 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "event.schema.json",
+  "title": "事件配置 Schema",
+  "description": "定义事件流程、分支选择、触发条件的结构规范。支持大事件（Major）和小事件（Minor）双层架构",
+  "type": "object",
+  "required": ["event_id", "name", "type", "trigger_conditions", "scenes"],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "description": "事件唯一标识符",
+      "pattern": "^[a-z][a-z0-9_]*$"
+    },
+    "name": {
+      "type": "string",
+      "description": "事件显示名称"
+    },
+    "type": {
+       "type": "string",
+       "description": "事件类型：大事件时代趋势，小事件自由互动",
+       "enum": ["major", "minor", "daily"]
+     },
+     "difficulty": {
+      "type": "integer",
+      "description": "事件难度（影响奖励和失败惩罚），1-10",
+      "minimum": 1,
+      "maximum": 10,
+      "default": 5
+    },
+    "reward": {
+      "type": "object",
+      "description": "事件完成后的基础奖励",
+      "properties": {
+        "cultivation_gain": {
+          "type": "integer",
+          "description": "修为增加"
+        },
+        "add_items": {
+          "type": "array",
+          "description": "增加物品",
+          "items": {
+            "type": "object",
+            "required": ["item_id", "quantity"],
+            "properties": {
+              "item_id": { "type": "string" },
+              "quantity": { "type": "integer" }
+            }
+          }
+        },
+        "affinity_bonus": {
+          "type": "array",
+          "description": "NPC好感度增加",
+          "items": {
+            "type": "object",
+            "required": ["npc_id", "value"],
+            "properties": {
+              "npc_id": { "type": "string" },
+              "value": { "type": "integer" }
+            }
+          }
+        },
+        "set_flags": {
+          "type": "array",
+          "description": "设置标志位",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "description": {
+      "type": "string",
+      "description": "事件简短描述，用于触发提示"
+    },
+    "tags": {
+      "type": "array",
+      "description": "标签（如：修炼、对话、战斗、剧情、日常），用于AI分类和触发筛选",
+      "items": { "type": "string" }
+    },
+    "free_narrative_hints": {
+      "type": "array",
+      "description": "小事件（type=minor）：自由叙事提示，告诉Agent这个事件的背景、主角、NPC、核心冲突",
+      "items": { "type": "string" }
+    },
+    "trigger_conditions": {
+      "type": "array",
+      "description": "事件触发条件",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["type"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["scene_enter", "flag_check", "attribute_check", "npc_affinity_check"],
+            "description": "触发类型"
+          },
+          "scene_id": { "type": "string", "description": "场景ID（scene_enter 时必填）" },
+          "required_flags": {
+            "type": "array",
+            "description": "必须满足的标志位",
+            "items": { "type": "string" }
+          },
+          "required_attributes": {
+            "type": "array",
+            "description": "必须满足的属性条件",
+            "items": {
+              "type": "object",
+              "required": ["attribute", "min_value"],
+              "properties": {
+                "attribute": { "type": "string" },
+                "min_value": { "type": "number" }
+              }
+            }
+          },
+          "forbidden_flags": {
+            "type": "array",
+            "description": "禁止出现的标志位（有则不能触发）",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "scenes": {
+      "type": "object",
+      "description": "事件包含的场景映射（key 为 scene_id）",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "required": ["scene_id", "name", "description"],
+        "properties": {
+          "scene_id": { "type": "string" },
+          "name": { "type": "string", "description": "场景名称" },
+          "description": { "type": "string", "description": "场景基础描述" },
+          "mood": { "type": "string", "description": "场景氛围" },
+          "narrative_hook": { "type": "string", "description": "叙事关键词，辅助 Agent 生成" },
+          "free_input_enabled": {
+            "type": "boolean",
+            "description": "是否允许玩家自由输入",
+            "default": false
+          },
+          "free_input_hints": {
+            "type": "array",
+            "description": "自由输入提示语",
+            "items": { "type": "string" }
+          },
+          "choices": {
+            "type": "array",
+            "description": "预设选项",
+            "items": {
+              "type": "object",
+              "required": ["id", "text", "next_scene"],
+              "properties": {
+                "id": { "type": "string", "description": "选项唯一ID" },
+                "text": { "type": "string", "description": "选项显示文本" },
+                "condition": {
+                  "type": "object",
+                  "description": "选项出现条件（可选，null 表示始终可用）",
+                  "properties": {
+                    "required_flag": { "type": "string" },
+                    "min_attribute": {
+                      "type": "object",
+                      "properties": {
+                        "attribute": { "type": "string" },
+                        "value": { "type": "number" }
+                      }
+                    }
+                  }
+                },
+                "effects": {
+                  "type": "array",
+                  "description": "选择后的效果",
+                  "items": {
+                    "type": "object",
+                    "required": ["type"],
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "enum": ["modify_attribute", "set_flag", "modify_npc_affinity", "add_item", "remove_item", "change_scene", "trigger_event"]
+                      },
+                      "target": { "type": "string", "description": "效果目标" },
+                      "operation": { "type": "string", "enum": ["add", "subtract", "set", "multiply"] },
+                      "value": {},
+                      "flag": { "type": "string" },
+                      "scene_id": { "type": "string" },
+                      "event_id": { "type": "string" },
+                      "item_id": { "type": "string" },
+                      "quantity": { "type": "integer" }
+                    }
+                  }
+                },
+                "next_scene": { "type": "string", "description": "下一个场景ID" }
+              }
+            }
+          },
+          "agent_guidance": {
+            "type": "object",
+            "description": "Agent 叙事引导（帮助 Agent 生成更好的场景描写）",
+            "properties": {
+              "setting_details": {
+                "type": "array",
+                "description": "场景细节提示",
+                "items": { "type": "string" }
+              },
+              "sensory_details": {
+                "type": "array",
+                "description": "感官细节提示",
+                "items": { "type": "string" }
+              },
+              "npc_behavior_hints": {
+                "type": "array",
+                "description": "NPC 行为提示",
+                "items": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

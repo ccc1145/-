@@ -1,10 +1,13 @@
-{# NPC 对话模板：基于角色卡 + 玩家输入，生成该 NPC 的个性化回应。 #}
+{# NPC 对话模板 v2（Day 10 升级）：基于完整角色卡 + knowledge 限制 + Few-shot 示例，生成该 NPC 的个性化回应。 #}
 【对话上下文】
 场景：{{ current_scene.name }}
 玩家输入："{{ player_input.text }}"
 
 【NPC 角色卡】
 姓名：{{ npc.name }}
+{% if npc.description %}
+身份：{{ npc.description }}
+{% endif %}
 性格：{{ npc.personality.traits | join("、") }}
 {% if "values" in npc.personality and npc.personality["values"] %}
 价值观：{{ npc.personality["values"] | join("、") }}
@@ -12,11 +15,27 @@
 {% if "dislikes" in npc.personality and npc.personality["dislikes"] %}
 厌恶：{{ npc.personality["dislikes"] | join("、") }}
 {% endif %}
+{% if "emotional_range" in npc.personality and npc.personality["emotional_range"] %}
+情绪范围：{{ npc.personality["emotional_range"] | join("、") }}
+{% endif %}
 说话风格：{{ npc.personality.speaking_style }}
 
 【当前关系状态】
 好感度：{{ npc.current_affinity }}
 关系等级：{% if npc.current_affinity > 30 %}亲近{% elif npc.current_affinity > 0 %}友善{% elif npc.current_affinity > -30 %}冷淡{% else %}厌恶{% endif %}
+
+{% if npc_knowledge and npc_knowledge | length > 0 %}
+【NPC 知识范围（重要：只能说自己知道的事）】
+该 NPC 掌握以下知识，回答时只能基于这些内容，不知道的就说不知道或转移话题，严禁编造：
+{% for knowledge in npc_knowledge %}
+- {{ knowledge }}
+{% endfor %}
+{% endif %}
+
+{% if world_book_context %}
+【相关世界观知识（关键词触发命中）】
+{{ world_book_context }}
+{% endif %}
 
 【对话历史】
 {% for line in dialogue_history -%}
@@ -24,6 +43,15 @@
 {% else -%}
 （初次对话，无历史）
 {% endfor %}
+
+{% if dialogue_examples and dialogue_examples | length > 0 %}
+【对话示例（Few-shot，参考此风格与触发点反应）】
+{% for ex in dialogue_examples %}
+场景：{{ ex.get("context", "") }}
+玩家：{{ ex.get("user", "") }}
+{{ npc.name }}：{{ ex.get("response", "") }}
+{% endfor %}
+{% endif %}
 
 请生成该 NPC 的回应，要求：
 1. 严格符合角色性格和说话风格，不要 OOC（脱离角色）。
@@ -33,7 +61,9 @@
    - 冷淡（-29-0）：言简意赅，可能敷衍或转移话题。
    - 厌恶（<-30）：训斥、拒绝、甚至赶人。
 3. 不要说现代网络用语，保持古风修仙语感。
-4. 回应控制在 30-100 字，不要长篇大论。
+4. 严格遵守【NPC 知识范围】限制：只知道知识列表里的事，对列表外的问题应该用"不知"、"不便说"或转移话题回应，不能编造。
+5. 参考【对话示例】的风格和触发点反应方式（如被问到敏感话题时的停顿、回避、沉默等）。
+6. 回应控制在 30-150 字，不要长篇大论。
 
 输出格式（严格 JSON，不要附加多余文字，不要放在代码块里）：
 {

@@ -1,6 +1,7 @@
 """NPC 对话生成器：封装多 NPC 对话生成 + 记忆驱动的连贯性。
 
 策划书 Day 9 任务：实现 npc_dialogue_generator.py（NPC 动态对话生成）。
+Day 10 升级：集成 WorldBookLoader，注入 NPC 完整角色卡（knowledge + dialogue_examples）。
 
 与 NarrativeController.generate_npc_dialogue 的区别：
 - NarrativeController 是通用调度器，对话只是其一种 request_type
@@ -9,6 +10,7 @@
   2. 集成 MemoryManager v2（记忆驱动连贯性）
   3. 自动记录对话到记忆（生成后自动 add_npc_dialogue）
   4. 基于关键事件影响 NPC 态度（如玩家帮过 NPC，NPC 更热情）
+  5. Day 10：注入 NPC knowledge 限制 + dialogue_examples Few-shot + world_book 关键词触发
 
 用法：
     generator = NPCDialogueGenerator(llm_adapter, memory_manager)
@@ -27,6 +29,7 @@ from prompt_builder import PromptBuilder
 if TYPE_CHECKING:
     from llm_adapter import NarrativeLLMAdapter
     from narrative_controller import NarrativeController
+    from world_book_loader import WorldBookLoader
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +42,7 @@ class NPCDialogueGenerator:
     2. talk: 与指定 NPC 对话，自动记录到记忆
     3. 对话生成委托给 NarrativeController（复用重试+降级机制）
     4. 生成后自动调用 memory_manager.add_npc_dialogue
+    5. Day 10：注入 NPC knowledge 限制 + dialogue_examples Few-shot + world_book 关键词触发
     """
 
     def __init__(
@@ -46,12 +50,14 @@ class NPCDialogueGenerator:
         llm_adapter: "NarrativeLLMAdapter",
         memory_manager: MemoryManager | None = None,
         controller: "NarrativeController | None" = None,
+        world_book_loader: "WorldBookLoader | None" = None,
     ) -> None:
         """
         Args:
             llm_adapter: LLM 适配器
             memory_manager: 记忆管理器（可选，不传则内部创建）
             controller: NarrativeController（可选，不传则内部创建）
+            world_book_loader: Day 10 新增，世界观书加载器（用于关键词触发注入）
         """
         self._llm = llm_adapter
         self._memory = memory_manager or MemoryManager()
@@ -62,6 +68,8 @@ class NPCDialogueGenerator:
         else:
             from narrative_controller import NarrativeController
             self._controller = NarrativeController(llm_adapter)
+        # Day 10: WorldBookLoader（可选，用于关键词触发注入）
+        self._world_book = world_book_loader
         # 注册的 NPC：{npc_id: {"card": ..., "scene": ...}}
         self._npcs: dict[str, dict[str, Any]] = {}
 
@@ -108,8 +116,10 @@ class NPCDialogueGenerator:
         流程：
         1. 查找已注册的 NPC 角色卡和场景
         2. 从 MemoryManager 获取该 NPC 的对话历史
-        3. 委托 NarrativeController 生成对话
-        4. 自动记录到 MemoryManager（带 turn）
+        3. Day 10：从角色卡提取 knowledge / dialogue_examples
+        4. Day 10：用 world_book_loader 关键词匹配玩家输入，触发世界观知识注入
+        5. 委托 NarrativeController 生成对话（带完整角色卡信息）
+        6. 自动记录到 MemoryManager（带 turn）
 
         Args:
             npc_id: NPC ID
@@ -134,12 +144,38 @@ class NPCDialogueGenerator:
             # get_prompt_context 返回格式化文本，拆成行给模板
             dialogue_history_lines = npc_memory.get_prompt_context().split("\n")
 
-        # 委托 controller 生成
+        # Day 10: 从角色卡提取 knowledge 和 dialogue_examples
+        npc_knowledge = npc_card.get("knowledge", [])
+        dialogue_examples = npc_card.get("dialogue_examples", [])
+
+        # Day 10: world_book 关键词触发匹配
+        world_book_context = ""
+        if self._world_book is not None:
+            recent_texts = [
+                d.get("player", "") + " " + d.get("npc", "")
+                for d in (npc_memory.get_context() if npc_memory else [])
+            ]
+            matched_entries = self._world_book.match(
+                player_text, recent_texts=recent_texts
+            )
+            world_book_context = self._world_book.format_entries_for_prompt(
+                matched_entries
+            )
+            if world_book_context:
+                logger.info(
+                    "world_book 触发 %d 条知识碎片 (npc=%s)",
+                    len(matched_entries), npc_id,
+                )
+
+        # 委托 controller 生成（带 Day 10 新参数）
         result = self._controller.generate_npc_dialogue(
             npc=npc_card,
             player_input={"text": player_text},
             current_scene=scene,
             dialogue_history=dialogue_history_lines,
+            npc_knowledge=npc_knowledge,
+            dialogue_examples=dialogue_examples,
+            world_book_context=world_book_context,
         )
 
         # 提取 NPC 回应文本，记录到记忆

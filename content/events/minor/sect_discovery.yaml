@@ -1,0 +1,27 @@
+# 小事件：秘境线索
+# 探索类——发现宗门内的隐秘角落
+event_id: "sect_discovery"
+name: "秘境线索"
+type: "minor"
+difficulty: 4
+tags: ["探索", "秘境", "发现"]
+
+trigger_conditions:
+  - type: "flag_check"
+    required_flags: ["trial_completed"]
+    forbidden_flags: ["secret_explored"]
+
+free_narrative_hints:
+  - "玩家在宗门某处（后山、废弃院落、偏僻走廊、某棵老树下）偶然发现了一些异常痕迹——可能是古老的刻痕、散落的器物碎片、不寻常的灵气波动"
+  - "这些痕迹暗示着宗门内有一处被遗忘或封存的角落"
+  - "玩家可以选择：深入调查（可能发现小型秘境入口或前人遗物，但有小型机关/禁制挑战）；上报宗门（获得执事表扬但失去独享机会）；记录下来以后再探"
+  - "如果深入调查，可能遇到简单的阵法残痕或守卫禁制，Agent 判定玩家是否能应对"
+  - "此事件不以获取重大秘宝为目的，以增添探索趣味为主。发现的东西应与世界书设定一致"
+  - "完成后设置 flag: secret_explored 防止重复触发"
+
+scenes:
+  entry:
+    scene_id: "entry"
+    name: "意外发现"
+    description: "你走过一处平日少有人至的角落，余光捕捉到一丝不寻常的痕迹——像是某种古老刻痕的一部分，被青苔和岁月掩埋了大半。"
+    free_input_enabled: true

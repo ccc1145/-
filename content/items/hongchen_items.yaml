@@ -1,0 +1,156 @@
+# 物品配置：红尘阁特色物品
+# 情报宗门——伪装工具、毒药、窃听道具、幻术媒介
+- item_id: "disguise_mask"
+  name: "易容面具"
+  type: "equipment"
+  description: "以灵蚕丝和特制胶质制成的面具，贴合面部后可改变容貌。精细程度一般，但足以骗过普通人的眼睛。红尘阁新人入门后配发。"
+  rarity: "common"
+  stackable: false
+  effects:
+    - type: "boost_attribute"
+      target: "stealth"
+      value: 10
+      description: "提升伪装能力"
+  price: 50
+
+- item_id: "hongchen_heart_technique"
+  name: "《红尘渡厄经》入门篇"
+  type: "skill_book"
+  description: "红尘阁核心功法的入门部分，以情入道、以欲为引，在七情六欲中保持本心。修炼此法需自行把控，沉沦者自生自灭。"
+  rarity: "common"
+  stackable: false
+  effects:
+    - type: "learn_skill"
+      target: "hongchen_cultivation"
+      value: 1
+      description: "习得红尘阁基础修炼法门"
+  price: 0
+
+- item_id: "dream_incense"
+  name: "迷梦香"
+  type: "consumable"
+  description: "一种无色无味的熏香，点燃后可使吸入者精神放松、防备降低，套话的绝佳辅助工具。对意志坚定者效果减半。"
+  rarity: "uncommon"
+  stackable: true
+  max_stack: 10
+  effects:
+    - type: "boost_attribute"
+      target: "charm"
+      value: 15
+      description: "使目标放松警惕，便于套取信息"
+  price: 60
+
+- item_id: "soft_tongue_powder"
+  name: "真言散"
+  type: "consumable"
+  description: "一种混入酒水中的药粉，无色无味。服用者在药效期间会不自觉地多说真话，但对金丹期以上修士效果极弱。"
+  rarity: "rare"
+  stackable: true
+  max_stack: 5
+  effects:
+    - type: "boost_attribute"
+      target: "charm"
+      value: 30
+      description: "使目标难以说谎，持续一刻钟"
+  price: 200
+
+- item_id: "swift_step_token"
+  name: "疾行符"
+  type: "consumable"
+  description: "绘有轻身符文的符箓，贴在腿上激活后可大幅提升移动速度，持续约半炷香。撤退或追踪时的利器。"
+  rarity: "common"
+  stackable: true
+  max_stack: 10
+  effects:
+    - type: "boost_attribute"
+      target: "speed"
+      value: 20
+      description: "短时间内大幅提升移动速度"
+  price: 40
+
+- item_id: "eavesdropping_talisman"
+  name: "顺风符"
+  type: "consumable"
+  description: "贴在墙上的窃听符箓，激活后可在隔壁房间听到符箓附近的声音。有效范围约三丈，持续一个时辰。"
+  rarity: "uncommon"
+  stackable: true
+  max_stack: 5
+  effects:
+    - type: "boost_attribute"
+      target: "perception"
+      value: 25
+      description: "提升监听能力，持续一个时辰"
+  price: 80
+
+- item_id: "mirage_pearl"
+  name: "幻影珠"
+  type: "consumable"
+  description: "注入灵力后可制造一个简单的幻影分身的宝珠，持续约十息。分身无攻击力，但可迷惑对手争取脱身时间。"
+  rarity: "uncommon"
+  stackable: true
+  max_stack: 3
+  effects:
+    - type: "boost_attribute"
+      target: "stealth"
+      value: 30
+      description: "制造幻影分身迷惑对手"
+  price: 150
+
+- item_id: "silent_dagger"
+  name: "无声刃"
+  type: "equipment"
+  description: "红尘阁执行者的制式匕首，刃身以哑光黑铁锻造，刺入时无声无光。刀鞘内藏有小型消音阵纹。"
+  rarity: "uncommon"
+  stackable: false
+  effects:
+    - type: "boost_attribute"
+      target: "stealth"
+      value: 15
+      description: "潜行刺杀时不易被发现"
+  price: 180
+
+- item_id: "love_poison"
+  name: "情丝绕"
+  type: "consumable"
+  description: "红尘阁独门秘药，服下后会在短时间内对特定对象产生强烈的好感与信任。药效过后会遗忘被下药期间的异常行为。非必要不启用。"
+  rarity: "rare"
+  stackable: true
+  max_stack: 3
+  effects:
+    - type: "boost_affinity"
+      target: "target.npc"
+      value: 50
+      description: "大幅提升目标对使用者的好感度（时效性）"
+  price: 500
+
+- item_id: "secret_scroll_case"
+  name: "密信管"
+  type: "equipment"
+  description: "中空的金属管，可藏入一卷薄纸或小物件。管身可密封并附加灵力印记，打开时若印记不符则自动销毁内容。"
+  rarity: "common"
+  stackable: true
+  max_stack: 5
+  effects: []
+  price: 30
+
+- item_id: "coded_ledger"
+  name: "密码账本"
+  type: "key_item"
+  description: "表面是一本普通的百花舫流水账，实则以特殊编码记录了情报信息。需配合特定解码方法阅读。"
+  rarity: "common"
+  stackable: false
+  effects: []
+  price: 0
+
+- item_id: "blossom_guqin"
+  name: "百花琴"
+  type: "equipment"
+  description: "百花舫琴师的制式古琴，琴身以百年梧桐木制成，琴弦以灵蚕丝绞合。音色清越，弹奏时可融入基础幻术。红萼日常所用之琴。"
+  rarity: "uncommon"
+  stackable: false
+  effects:
+    - type: "boost_attribute"
+      target: "spell_power"
+      value: 10
+      description: "弹奏时幻术类术法效果增强"
+  price: 250
