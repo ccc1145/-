@@ -260,16 +260,28 @@ class NarrativeController:
 
         npc_dialogue.j2 输出: {response, emotion, internal_thought}
         归一化为: {narrative, narrative_segments, available_choices, thought, npc_reactions}
+
+        Day 11 增强：response 空值兜底（避免 narrative 为空字符串）
         """
         response_text = parsed.get("response", "")
         emotion = parsed.get("emotion", "")
         internal_thought = parsed.get("internal_thought", "")
         npc_name = npc.get("name", "NPC")
 
+        # Day 11: response 空值兜底
+        if not response_text or not str(response_text).strip():
+            response_text = f"{npc_name}沉默片刻，未置一词。"
+            emotion = emotion or "沉默"
+            logger.warning(
+                "NPC 对话 response 为空，使用兜底文案。parsed keys: %s",
+                list(parsed.keys()),
+            )
+        response_text = str(response_text)
+
         narrative = response_text
         segments = [
             {"type": "dialogue", "speaker": npc_name, "text": response_text}
-        ] if response_text else []
+        ]
 
         return {
             "narrative": narrative,

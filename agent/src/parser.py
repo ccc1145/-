@@ -41,6 +41,35 @@ _FIELD_ALIASES = {
     "parse_failed": ["parse_failed"],
 }
 
+# available_choices 子字段名归一化（Day 11 新增：处理 choice_id / choice_text 等变体）
+_CHOICE_FIELD_ALIASES = {
+    "id": ["id", "choice_id", "key", "value"],
+    "text": ["text", "choice_text", "label", "content", "description"],
+}
+
+# narrative_segments.type 允许的枚举值（对齐 docs/agent-io-format.md）
+# 非标准值会被归一化为 narration
+_VALID_SEGMENT_TYPES = {"narration", "dialogue", "thought", "action"}
+
+# 输出白名单：解析成功后只保留这些字段，过滤 LLM 返回的额外字段（如 reasoning / explanation）
+# Day 11 新增：避免非 schema 字段污染下游
+_OUTPUT_WHITELIST = {
+    "narrative",
+    "narrative_segments",
+    "available_choices",
+    "state_changes",
+    "free_input_enabled",
+    "thought",
+    "npc_reactions",
+    # 降级标记由 parser/controller 内部设置，不在白名单过滤范围内
+    "degraded",
+    "parse_failed",
+    # 自由输入附加字段（Day 8）
+    "intent",
+    "is_ooc",
+    "ooc_reason",
+}
+
 # 中文标点 -> 英文标点（JSON 解析前预处理）
 _PUNCT_MAP = {
     "\u201c": '"',  # "
@@ -173,6 +202,11 @@ class AgentOutputParser:
         - available_choices 必填，长度 1-4
         - narrative / narrative_segments 至少一个
         - narrative_segments 中 type=dialogue 时 speaker 必填
+
+        Day 11 增强：
+        - available_choices 子字段名归一化（choice_id -> id, choice_text -> text）
+        - narrative_segments.type 枚举校验（非标准值归一化为 narration）
+        - 输出白名单过滤（删除 LLM 返回的非 schema 字段，如 reasoning / explanation）
         """
         # 字段名归一化（处理 Narrative / narrativeSegments 等大小写变体）
         data = self._normalize_field_names(data)
@@ -184,11 +218,14 @@ class AgentOutputParser:
         else:
             # 截断到最多 4 个
             data["available_choices"] = choices[:4]
-            # 校验每个 choice 的字段
+            # 校验每个 choice 的字段（Day 11: 子字段名归一化）
             cleaned = []
             for c in data["available_choices"]:
-                if isinstance(c, dict) and "id" in c and "text" in c:
-                    cleaned.append({"id": str(c["id"]), "text": str(c["text"])})
+                if not isinstance(c, dict):
+                    continue
+                normalized_c = self._normalize_choice_fields(c)
+                if normalized_c:
+                    cleaned.append(normalized_c)
             data["available_choices"] = cleaned or _FALLBACK_CHOICES
 
         # narrative / narrative_segments 至少一个；都没有则补占位
@@ -204,7 +241,7 @@ class AgentOutputParser:
             else:
                 data["narrative"] = str(narrative)
 
-        # narrative_segments 字段校验
+        # narrative_segments 字段校验（Day 11: type 枚举校验）
         if isinstance(segments, list):
             cleaned_segs = []
             for seg in segments:
@@ -214,14 +251,53 @@ class AgentOutputParser:
                 seg_text = seg.get("text")
                 if not seg_type or not seg_text:
                     continue
-                cleaned_seg = {"type": str(seg_type), "text": str(seg_text)}
+                # Day 11: type 枚举校验，非标准值归一化为 narration
+                seg_type_str = str(seg_type).lower()
+                if seg_type_str not in _VALID_SEGMENT_TYPES:
+                    seg_type_str = "narration"
+                cleaned_seg = {"type": seg_type_str, "text": str(seg_text)}
                 # type=dialogue 时必须有 speaker
-                if seg_type == "dialogue" and seg.get("speaker"):
+                if seg_type_str == "dialogue" and seg.get("speaker"):
                     cleaned_seg["speaker"] = str(seg["speaker"])
                 cleaned_segs.append(cleaned_seg)
             data["narrative_segments"] = cleaned_segs
 
+        # Day 11: 白名单过滤，删除 LLM 返回的非 schema 字段
+        data = self._apply_whitelist(data)
+
         return data
+
+    @staticmethod
+    def _normalize_choice_fields(choice: dict[str, Any]) -> dict[str, str] | None:
+        """归一化 available_choices 子字段名（Day 11 新增）。
+
+        处理 LLM 返回的变体：choice_id -> id, choice_text -> text, label -> text 等。
+        """
+        result: dict[str, str] = {}
+        for standard, aliases in _CHOICE_FIELD_ALIASES.items():
+            alias_set = {AgentOutputParser._to_snake_case(a) for a in aliases}
+            for key, value in choice.items():
+                normalized_key = AgentOutputParser._to_snake_case(key)
+                if normalized_key in alias_set or normalized_key == standard:
+                    if value:  # 非空才接受
+                        result[standard] = str(value)
+                        break
+        # 必须同时有 id 和 text 才算有效
+        if "id" in result and "text" in result:
+            return result
+        return None
+
+    @staticmethod
+    def _apply_whitelist(data: dict[str, Any]) -> dict[str, Any]:
+        """应用输出白名单，过滤非 schema 字段（Day 11 新增）。
+
+        保留 _OUTPUT_WHITELIST 中的字段，删除其他（如 LLM 返回的 reasoning / explanation）。
+        降级标记（degraded / parse_failed）始终保留。
+        """
+        return {
+            k: v for k, v in data.items()
+            if k in _OUTPUT_WHITELIST or k in ("degraded", "parse_failed")
+        }
 
     # ---- 辅助方法 ----
 
