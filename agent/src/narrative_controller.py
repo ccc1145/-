@@ -13,6 +13,7 @@ Day 8 扩展为完整 controller：含 OOC 检测、自由输入路由。
 
 Day 6-7 Polish：加指数退避重试间隔，更细日志级别
 Day 8：集成 FreeInputProcessor，新增 generate_free_input_response 方法
+Day 12：集成 content_filter（敏感词过滤）+ fallback_provider（场景级降级文案）
 
 输出对齐 docs/agent-io-format.md v1.0。
 """
@@ -22,11 +23,13 @@ import logging
 import time
 from typing import Any
 
+from content_filter import sanitize_llm_output
+from fallback_provider import build_dialogue_fallback, build_free_input_fallback, build_scene_fallback
 from free_input_processor import FreeInputProcessor
 from llm_adapter import NarrativeLLMAdapter
 from parser import AgentOutputParser
 from prompt_builder import PromptBuilder
-from world_knowledge import get_all_world_knowledge, get_preset_narrative
+from world_knowledge import get_all_world_knowledge
 
 logger = logging.getLogger(__name__)
 
@@ -260,16 +263,28 @@ class NarrativeController:
 
         npc_dialogue.j2 输出: {response, emotion, internal_thought}
         归一化为: {narrative, narrative_segments, available_choices, thought, npc_reactions}
+
+        Day 11 增强：response 空值兜底（避免 narrative 为空字符串）
         """
         response_text = parsed.get("response", "")
         emotion = parsed.get("emotion", "")
         internal_thought = parsed.get("internal_thought", "")
         npc_name = npc.get("name", "NPC")
 
+        # Day 11: response 空值兜底
+        if not response_text or not str(response_text).strip():
+            response_text = f"{npc_name}沉默片刻，未置一词。"
+            emotion = emotion or "沉默"
+            logger.warning(
+                "NPC 对话 response 为空，使用兜底文案。parsed keys: %s",
+                list(parsed.keys()),
+            )
+        response_text = str(response_text)
+
         narrative = response_text
         segments = [
             {"type": "dialogue", "speaker": npc_name, "text": response_text}
-        ] if response_text else []
+        ]
 
         return {
             "narrative": narrative,
@@ -321,11 +336,13 @@ class NarrativeController:
         """带重试和降级的 LLM 调用。
 
         流程（对齐策划书 5.4 节）：
-            尝试 LLM 调用 → 解析 → 校验
+            尝试 LLM 调用 → 内容安全过滤 → 解析 → 校验
               ↓ 失败
             重试（最多 max_retries 次，每次重新调用 LLM）
               ↓ 仍失败
-            降级响应（返回预设文案）
+            降级响应（返回预设文案，Day 12 改用 fallback_provider）
+
+        Day 12 增强：LLM 输出经过 content_filter 过滤，命中 blocked 词直接触发降级
         """
         last_error: str = ""
 
@@ -357,6 +374,19 @@ class NarrativeController:
                     last_error = "empty_llm_output"
                     logger.warning("%s LLM 返回空内容", attempt_tag)
                     continue
+
+                # Day 12: 内容安全过滤（LLM 输出）
+                cleaned_output, filter_result = sanitize_llm_output(raw_output)
+                if filter_result.is_blocked:
+                    last_error = f"content_blocked: {filter_result.blocked_words}"
+                    logger.warning(
+                        "%s LLM 输出命中 blocked 敏感词 %s，触发降级",
+                        attempt_tag,
+                        filter_result.blocked_words,
+                    )
+                    continue  # 重试，希望下次 LLM 不输出敏感词
+                # 使用清洗后的输出（modern_slang 已替换）
+                raw_output = cleaned_output if filter_result.has_replacement else raw_output
 
                 # 解析：对话模式只做 JSON 提取（不校验 available_choices 等字段），
                 # 场景叙事模式走完整 parser 校验
@@ -414,41 +444,23 @@ class NarrativeController:
         """降级响应：用预设文案 + 动态填充，保证游戏可运行。
 
         对齐策划书 5.4 节 _degraded_response 和 docs/agent-io-format.md 第 5.2 节。
-        Day 12 会增强为从 content/ 加载场景级预设文案。
+        Day 12 改用 fallback_provider 模块，支持场景级预设文案。
         """
         player_name = fallback_context.get("player_name", "道友")
-        preset_narrative = get_preset_narrative(scene_id)
 
         if is_dialogue:
             npc_name = fallback_context.get("npc_name", "对方")
-            return {
-                "narrative": f"{npc_name}沉默片刻，未置一词。",
-                "narrative_segments": [
-                    {"type": "narration", "text": f"{npc_name}沉默片刻，未置一词。"}
-                ],
-                "available_choices": [
-                    {"id": "continue", "text": "继续"},
-                    {"id": "leave", "text": "告退"},
-                ],
-                "free_input_enabled": True,
-                "thought": f"DEGRADED: npc dialogue fallback, error={error}",
-                "degraded": True,
-            }
+            return build_dialogue_fallback(
+                scene_id=scene_id,
+                npc_name=npc_name,
+                error=error,
+            )
 
-        # 场景叙事降级
-        # 用 player_name 做简单模板替换
-        narrative = preset_narrative.replace("{player_name}", player_name)
-        return {
-            "narrative": narrative,
-            "narrative_segments": [{"type": "narration", "text": narrative}],
-            "available_choices": [
-                {"id": "continue", "text": "继续前行"},
-                {"id": "observe", "text": "环顾四周"},
-            ],
-            "free_input_enabled": True,
-            "thought": f"DEGRADED: scene narrative fallback, scene={scene_id}, error={error}",
-            "degraded": True,
-        }
+        return build_scene_fallback(
+            scene_id=scene_id,
+            player_name=player_name,
+            error=error,
+        )
 
 
 if __name__ == "__main__":

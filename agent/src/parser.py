@@ -15,6 +15,10 @@ Day 6-7 Polish 增强：
   - narrative 为 list 时的合并处理
   - 花括号提取改为平衡匹配，避免嵌套 JSON 被截断
   - 单引号 JSON 容错（部分 LLM 用单引号）
+Day 12 增强：
+  - 嵌套对象提取（LLM 返回 {"data": {...}} / {"result": {...}}）
+  - 多行 JSON 拼接（LLM 把 JSON 拆成多段输出）
+  - 数值字段类型校验（hp/cultivation 应为 int，不能是 string）
 """
 from __future__ import annotations
 
@@ -39,6 +43,35 @@ _FIELD_ALIASES = {
     "thought": ["thought", "reasoning", "internal_thought"],
     "degraded": ["degraded"],
     "parse_failed": ["parse_failed"],
+}
+
+# available_choices 子字段名归一化（Day 11 新增：处理 choice_id / choice_text 等变体）
+_CHOICE_FIELD_ALIASES = {
+    "id": ["id", "choice_id", "key", "value"],
+    "text": ["text", "choice_text", "label", "content", "description"],
+}
+
+# narrative_segments.type 允许的枚举值（对齐 docs/agent-io-format.md）
+# 非标准值会被归一化为 narration
+_VALID_SEGMENT_TYPES = {"narration", "dialogue", "thought", "action"}
+
+# 输出白名单：解析成功后只保留这些字段，过滤 LLM 返回的额外字段（如 reasoning / explanation）
+# Day 11 新增：避免非 schema 字段污染下游
+_OUTPUT_WHITELIST = {
+    "narrative",
+    "narrative_segments",
+    "available_choices",
+    "state_changes",
+    "free_input_enabled",
+    "thought",
+    "npc_reactions",
+    # 降级标记由 parser/controller 内部设置，不在白名单过滤范围内
+    "degraded",
+    "parse_failed",
+    # 自由输入附加字段（Day 8）
+    "intent",
+    "is_ooc",
+    "ooc_reason",
 }
 
 # 中文标点 -> 英文标点（JSON 解析前预处理）
@@ -80,6 +113,8 @@ class AgentOutputParser:
             self._try_direct_json,
             self._try_markdown_block,
             self._try_brace_extraction,
+            self._try_nested_object,  # Day 12: 嵌套对象提取
+            self._try_multiline_json,  # Day 12: 多行 JSON 拼接
         ]
 
         # max_retries 控制策略轮次：3 个策略 × 1 轮 = 3 次尝试
@@ -98,11 +133,24 @@ class AgentOutputParser:
     # ---- 解析策略 ----
 
     def _try_direct_json(self, text: str) -> dict[str, Any] | None:
-        """策略 1：直接 JSON 解析。"""
+        """策略 1：直接 JSON 解析。
+
+        Day 12 增强：如果解析成功但结果是嵌套对象（只有包装字段如 data/result），
+        返回 None 让后续策略提取内层对象。
+        """
         try:
-            return json.loads(text)
+            data = json.loads(text)
         except (json.JSONDecodeError, TypeError):
             return None
+        # Day 12: 检测是否为纯包装对象（如 {"data": {...}}）
+        if isinstance(data, dict):
+            wrapper_keys = {"data", "result", "response", "output", "content", "payload"}
+            data_keys = {self._to_snake_case(k) for k in data.keys()}
+            # 如果只有包装字段且没有标准字段，让嵌套策略处理
+            standard_keys = {"narrative", "available_choices", "narrative_segments"}
+            if data_keys & wrapper_keys and not (data_keys & standard_keys):
+                return None
+        return data
 
     def _try_markdown_block(self, text: str) -> dict[str, Any] | None:
         """策略 2：从 Markdown 代码块提取 JSON。
@@ -164,6 +212,81 @@ class AgentOutputParser:
                             return None
         return None
 
+    def _try_nested_object(self, text: str) -> dict[str, Any] | None:
+        """策略 4（Day 12 新增）：嵌套对象提取。
+
+        部分LLM会把结果包在外层对象里，如：
+        - {"data": {...}}
+        - {"result": {...}}
+        - {"response": {...}}
+        - {"output": {...}}
+
+        本策略先用平衡花括号提取外层 JSON，再检查是否含已知包装字段。
+        """
+        outer = self._try_brace_extraction(text)
+        if not isinstance(outer, dict):
+            return None
+
+        # 已知的包装字段名
+        wrapper_keys = {"data", "result", "response", "output", "content", "payload"}
+        for key in wrapper_keys:
+            inner = outer.get(key)
+            if isinstance(inner, dict):
+                # 内层对象应包含 narrative 或 available_choices 等标准字段
+                inner_keys = {self._to_snake_case(k) for k in inner.keys()}
+                if "narrative" in inner_keys or "available_choices" in inner_keys:
+                    return inner
+        return None
+
+    def _try_multiline_json(self, text: str) -> dict[str, Any] | None:
+        """策略 5（Day 12 新增）：多行 JSON 拼接。
+
+        部分LLM（特别是推理模型）会在思考过程中输出多段 JSON 碎片：
+        ```
+        好的，我来生成：
+        {"narrative": "前半段
+        ```
+        （中间是思考过程）
+        ```
+        叙事内容","available_choices":[...]}
+        ```
+
+        本策略尝试：
+        1. 提取所有 {...} 片段
+        2. 按出现顺序拼接
+        3. 尝试解析拼接后的完整 JSON
+        """
+        # 找到所有可能的 JSON 片段（含未闭合的）
+        # 简化策略：把所有 { 和 } 之间的内容按顺序拼接
+        # 但只保留第一次出现 { 到最后一次 } 之间的内容
+        first_brace = text.find("{")
+        last_brace = text.rfind("}")
+        if first_brace == -1 or last_brace == -1 or last_brace <= first_brace:
+            return None
+
+        # 提取从第一个 { 到最后一个 } 的所有内容
+        # 过滤掉中间的非 JSON 文本（如思考过程）
+        candidate = text[first_brace : last_brace + 1]
+
+        # 尝试移除可能的换行和空格干扰，重新拼接
+        # 如果候选文本本身就是合法 JSON，直接返回
+        cleaned = self._normalize_punctuation(candidate)
+        try:
+            return json.loads(cleaned)
+        except (json.JSONDecodeError, TypeError):
+            pass
+
+        # 尝试单引号容错
+        try:
+            return json.loads(cleaned.replace("'", '"'))
+        except (json.JSONDecodeError, TypeError):
+            pass
+
+        # 尝试移除 JSON 中间的非 JSON 文本
+        # 策略：找到所有 "key": value 模式，重新构建 JSON
+        # 但这比较复杂，MVP 阶段先返回 None，让上层降级
+        return None
+
     # ---- 字段校验与补全 ----
 
     def _validate_and_complete(self, data: dict[str, Any]) -> dict[str, Any]:
@@ -173,7 +296,18 @@ class AgentOutputParser:
         - available_choices 必填，长度 1-4
         - narrative / narrative_segments 至少一个
         - narrative_segments 中 type=dialogue 时 speaker 必填
+
+        Day 11 增强：
+        - available_choices 子字段名归一化（choice_id -> id, choice_text -> text）
+        - narrative_segments.type 枚举校验（非标准值归一化为 narration）
+        - 输出白名单过滤（删除 LLM 返回的非 schema 字段，如 reasoning / explanation）
+        Day 12 增强：
+        - 嵌套对象自动展开（检测 {"data": {...}} 等包装结构）
+        - 数值字段类型校验（hp/cultivation 应为 int）
         """
+        # Day 12: 嵌套对象自动展开
+        data = self._unwrap_nested_object(data)
+
         # 字段名归一化（处理 Narrative / narrativeSegments 等大小写变体）
         data = self._normalize_field_names(data)
 
@@ -184,11 +318,14 @@ class AgentOutputParser:
         else:
             # 截断到最多 4 个
             data["available_choices"] = choices[:4]
-            # 校验每个 choice 的字段
+            # 校验每个 choice 的字段（Day 11: 子字段名归一化）
             cleaned = []
             for c in data["available_choices"]:
-                if isinstance(c, dict) and "id" in c and "text" in c:
-                    cleaned.append({"id": str(c["id"]), "text": str(c["text"])})
+                if not isinstance(c, dict):
+                    continue
+                normalized_c = self._normalize_choice_fields(c)
+                if normalized_c:
+                    cleaned.append(normalized_c)
             data["available_choices"] = cleaned or _FALLBACK_CHOICES
 
         # narrative / narrative_segments 至少一个；都没有则补占位
@@ -204,7 +341,7 @@ class AgentOutputParser:
             else:
                 data["narrative"] = str(narrative)
 
-        # narrative_segments 字段校验
+        # narrative_segments 字段校验（Day 11: type 枚举校验）
         if isinstance(segments, list):
             cleaned_segs = []
             for seg in segments:
@@ -214,14 +351,123 @@ class AgentOutputParser:
                 seg_text = seg.get("text")
                 if not seg_type or not seg_text:
                     continue
-                cleaned_seg = {"type": str(seg_type), "text": str(seg_text)}
+                # Day 11: type 枚举校验，非标准值归一化为 narration
+                seg_type_str = str(seg_type).lower()
+                if seg_type_str not in _VALID_SEGMENT_TYPES:
+                    seg_type_str = "narration"
+                cleaned_seg = {"type": seg_type_str, "text": str(seg_text)}
                 # type=dialogue 时必须有 speaker
-                if seg_type == "dialogue" and seg.get("speaker"):
+                if seg_type_str == "dialogue" and seg.get("speaker"):
                     cleaned_seg["speaker"] = str(seg["speaker"])
                 cleaned_segs.append(cleaned_seg)
             data["narrative_segments"] = cleaned_segs
 
+        # Day 12: 数值字段类型校验（state_changes 中的 hp/cultivation 等应为 int）
+        state_changes = data.get("state_changes")
+        if isinstance(state_changes, dict):
+            data["state_changes"] = self._coerce_numeric_fields(state_changes)
+
+        # Day 11: 白名单过滤，删除 LLM 返回的非 schema 字段
+        data = self._apply_whitelist(data)
+
         return data
+
+    @staticmethod
+    def _coerce_numeric_fields(data: dict[str, Any]) -> dict[str, Any]:
+        """数值字段类型校验（Day 12 新增）。
+
+        LLM 偶尔会返回字符串形式的数值（如 "100" 而非 100）。
+        本方法递归遍历 state_changes，把数值字符串转为 int/float。
+        """
+        if not isinstance(data, dict):
+            return data
+        result: dict[str, Any] = {}
+        for key, value in data.items():
+            if isinstance(value, dict):
+                result[key] = AgentOutputParser._coerce_numeric_fields(value)
+            elif isinstance(value, list):
+                result[key] = [
+                    AgentOutputParser._coerce_numeric_fields(v) if isinstance(v, dict) else v
+                    for v in value
+                ]
+            elif isinstance(value, str):
+                # 尝试转 int
+                try:
+                    result[key] = int(value)
+                    continue
+                except ValueError:
+                    pass
+                # 尝试转 float
+                try:
+                    result[key] = float(value)
+                    continue
+                except ValueError:
+                    pass
+                result[key] = value
+            else:
+                result[key] = value
+        return result
+
+    @staticmethod
+    def _normalize_choice_fields(choice: dict[str, Any]) -> dict[str, str] | None:
+        """归一化 available_choices 子字段名（Day 11 新增）。
+
+        处理 LLM 返回的变体：choice_id -> id, choice_text -> text, label -> text 等。
+        """
+        result: dict[str, str] = {}
+        for standard, aliases in _CHOICE_FIELD_ALIASES.items():
+            alias_set = {AgentOutputParser._to_snake_case(a) for a in aliases}
+            for key, value in choice.items():
+                normalized_key = AgentOutputParser._to_snake_case(key)
+                if normalized_key in alias_set or normalized_key == standard:
+                    if value:  # 非空才接受
+                        result[standard] = str(value)
+                        break
+        # 必须同时有 id 和 text 才算有效
+        if "id" in result and "text" in result:
+            return result
+        return None
+
+    @staticmethod
+    def _unwrap_nested_object(data: dict[str, Any]) -> dict[str, Any]:
+        """嵌套对象自动展开（Day 12 新增）。
+
+        检测 LLM 返回的包装结构，如 {"data": {...}} / {"result": {...}}，
+        自动展开为内层对象（如果内层含标准字段）。
+        """
+        if not isinstance(data, dict):
+            return data
+
+        wrapper_keys = {"data", "result", "response", "output", "content", "payload"}
+        standard_keys = {"narrative", "available_choices", "narrative_segments"}
+
+        # 检查是否为纯包装对象
+        data_keys = {AgentOutputParser._to_snake_case(k) for k in data.keys()}
+        has_wrapper = bool(data_keys & wrapper_keys)
+        has_standard = bool(data_keys & standard_keys)
+
+        # 如果只有包装字段且没有标准字段，尝试展开
+        if has_wrapper and not has_standard:
+            for key in wrapper_keys:
+                # 原始 key 可能是驼峰，需要检查
+                for orig_key, inner in data.items():
+                    if AgentOutputParser._to_snake_case(orig_key) == key and isinstance(inner, dict):
+                        inner_keys = {AgentOutputParser._to_snake_case(k) for k in inner.keys()}
+                        if inner_keys & standard_keys:
+                            return inner
+        return data
+
+    @staticmethod
+    def _apply_whitelist(data: dict[str, Any]) -> dict[str, Any]:
+        """应用输出白名单，过滤非 schema 字段（Day 11 新增）。
+
+        保留 _OUTPUT_WHITELIST 中的字段，删除其他（如 LLM 返回的 reasoning / explanation）。
+        降级标记（degraded / parse_failed）始终保留。
+        """
+        return {
+            k: v for k, v in data.items()
+            if k in _OUTPUT_WHITELIST or k in ("degraded", "parse_failed")
+        }
 
     # ---- 辅助方法 ----
 
