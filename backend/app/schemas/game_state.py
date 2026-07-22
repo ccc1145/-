@@ -19,7 +19,7 @@ class InventoryItem(BaseModel):
     item_id: str
     name: str
     quantity: int
-    effects: List[ItemEffect] = Field(default_factory=list)
+    effects: List[ItemEffect] = []
 
 
 class PlayerAttributes(BaseModel):
@@ -42,17 +42,16 @@ class Realm(BaseModel):
 class PlayerState(BaseModel):
     name: str = "无名修士"
     cultivation: int = 0
-    realm: Realm = Field(default_factory=Realm)
-    spirit_root: SpiritRoot = Field(default_factory=SpiritRoot)
-    attributes: PlayerAttributes = Field(default_factory=PlayerAttributes)
-    inventory: List[InventoryItem] = Field(default_factory=list)
-    # 以下字段前端暂未使用，但游戏逻辑可能需要，保留但不一定暴露
+    realm: Realm = Realm()
+    spirit_root: SpiritRoot = SpiritRoot()
+    attributes: PlayerAttributes = PlayerAttributes()
+    inventory: List[InventoryItem] = []
     hp: Optional[int] = 100
     max_hp: Optional[int] = 100
     mp: Optional[int] = 50
     max_mp: Optional[int] = 50
     spirit_stones: int = 0
-    skills: List[str] = Field(default_factory=list)
+    skills: List[str] = []
 
 
 class NPCState(BaseModel):
@@ -60,8 +59,8 @@ class NPCState(BaseModel):
     name: str
     affinity: int = 0
     location: str = ""
-    known_info: List[str] = Field(default_factory=list)
-    dialogue_history: List[str] = Field(default_factory=list)
+    known_info: List[str] = []
+    dialogue_history: List[str] = []
 
 
 class WorldTime(BaseModel):
@@ -71,8 +70,8 @@ class WorldTime(BaseModel):
 
 class WorldState(BaseModel):
     current_location: str = "青云门山门"
-    time: WorldTime = Field(default_factory=WorldTime)
-    flags: Dict[str, bool] = Field(default_factory=dict)
+    time: WorldTime = WorldTime()
+    flags: Dict[str, bool] = {}
 
 
 class EventRecord(BaseModel):
@@ -80,7 +79,7 @@ class EventRecord(BaseModel):
     scene_id: str
     narrative: str
     player_choice: str
-    state_changes: Dict[str, Any] = Field(default_factory=dict)
+    state_changes: Dict[str, Any] = {}
     timestamp: str = ""
 
 
@@ -96,11 +95,13 @@ class GameState(BaseModel):
     session_id: str = ""
     current_scene_id: str = "start"
     turn_count: int = 0
-    player: PlayerState = Field(default_factory=PlayerState)
-    npcs: Dict[str, NPCState] = Field(default_factory=dict)  # 如 {"master": {...}}
-    world: WorldState = Field(default_factory=WorldState)
-    recent_events: List[EventRecord] = Field(default_factory=list)
-    free_input_history: List[FreeInputRecord] = Field(default_factory=list)
+    player: PlayerState = PlayerState()
+    npcs: Dict[str, NPCState] = {}
+    world: WorldState = WorldState()
+    narrative: str = ""                              # 当前场景叙事
+    available_choices: List[Dict[str, Any]] = []     # 当前可用选项
+    recent_events: List[EventRecord] = []            # 最近事件
+    free_input_history: List[FreeInputRecord] = []   # 自由输入历史
 
 
 # ---------- 前端交互模型 ----------
@@ -130,8 +131,8 @@ class StartSessionResponse(BaseModel):
     session_id: str
     initial_state: GameState
     opening_narrative: str
-    narrative_segments: List[NarrativeSegment] = Field(default_factory=list)
-    available_choices: List[Choice] = Field(default_factory=list)
+    narrative_segments: List[NarrativeSegment] = []
+    available_choices: List[Choice] = []
     free_input_enabled: bool = True
 
 
@@ -139,8 +140,8 @@ class ActionResponse(BaseModel):
     success: bool = True
     new_state: GameState
     narrative: str
-    narrative_segments: List[NarrativeSegment] = Field(default_factory=list)
-    available_choices: List[Choice] = Field(default_factory=list)
+    narrative_segments: List[NarrativeSegment] = []
+    available_choices: List[Choice] = []
     scene_changed: bool = False
     scene_id: str = ""
     game_over: bool = False
