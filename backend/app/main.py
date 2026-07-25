@@ -35,7 +35,7 @@ from app.engine import EngineError, GameEngine
 from app.services.agent_bridge import AgentBridge
 
 # ==================== 加载环境变量 ====================
-load_dotenv()
+load_dotenv(PROJECT_ROOT / "backend" / ".env")
 
 # ==================== FastAPI 应用 ====================
 app = FastAPI(title="修仙模拟器后端")

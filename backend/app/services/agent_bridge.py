@@ -1,7 +1,16 @@
 """Agent 桥接服务：调用人员C 的 NarrativeController 生成叙事。"""
 import os
 import logging
+import sys
+from pathlib import Path
 from typing import Any
+
+# 允许服务模块被测试或脚本直接导入，不依赖 app.main 预先修改 sys.path。
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+for source_dir in (PROJECT_ROOT / "agent" / "src", PROJECT_ROOT / "ai_agent_framework" / "src"):
+    source_path = str(source_dir)
+    if source_path not in sys.path:
+        sys.path.insert(0, source_path)
 
 from narrative_controller import NarrativeController
 from llm_adapter import NarrativeLLMAdapter
