@@ -33,6 +33,7 @@ function App() {
   const closeSavePanel = useGameStore((state) => state.closeSavePanel)
   const saveGame = useGameStore((state) => state.saveGame)
   const loadGame = useGameStore((state) => state.loadGame)
+  const deleteSave = useGameStore((state) => state.deleteSave)
 
   return (
     <div className="app-shell min-h-screen text-stone-100">
@@ -57,6 +58,7 @@ function App() {
           onClose={closeSavePanel}
           onSave={saveGame}
           onLoad={loadGame}
+          onDelete={deleteSave}
         />
       )}
 

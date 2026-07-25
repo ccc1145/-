@@ -31,6 +31,7 @@ interface GameStore {
   closeSavePanel: () => void
   saveGame: (label: string) => Promise<void>
   loadGame: (saveId: string) => Promise<void>
+  deleteSave: (saveId: string) => Promise<void>
 }
 
 function fallbackSegments(text: string): NarrativeSegment[] {
@@ -187,7 +188,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     set({ savePanelVisible: true, isLoading: true, error: null })
     try {
       const saves = await gameApi.getSaves(gameState.session_id)
-      set({ saves: [...saves].reverse(), isLoading: false })
+      set({ saves, isLoading: false })
     } catch (error) {
       set({ isLoading: false, error: error instanceof Error ? error.message : '读取存档失败' })
     }
@@ -202,9 +203,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
     if (!gameState) return
     set({ isLoading: true, error: null })
     try {
-      await gameApi.saveGame(gameState.session_id, label)
+      const normalizedLabel = label.trim() || `第 ${gameState.turn_count} 回合`
+      await gameApi.saveGame(gameState.session_id, normalizedLabel)
       const saves = await gameApi.getSaves(gameState.session_id)
-      set({ saves: [...saves].reverse(), isLoading: false })
+      set({ saves, isLoading: false })
     } catch (error) {
       set({ isLoading: false, error: error instanceof Error ? error.message : '保存游戏失败' })
     }
@@ -215,10 +217,12 @@ export const useGameStore = create<GameStore>((set, get) => ({
     if (!gameState) return
     set({ isLoading: true, error: null })
     try {
-      const loadedState = await gameApi.loadGame(gameState.session_id, saveId)
+      const response = await gameApi.loadGame(gameState.session_id, saveId)
       set({
-        gameState: loadedState,
-        gameOver: false,
+        gameState: response.state,
+        availableChoices: response.available_choices,
+        freeInputEnabled: response.free_input_enabled,
+        gameOver: response.game_over,
         savePanelVisible: false,
         narrativeSegments: fallbackSegments('存档已载入。你重新凝神，继续眼前的仙途。'),
         degraded: false,
@@ -226,6 +230,21 @@ export const useGameStore = create<GameStore>((set, get) => ({
       })
     } catch (error) {
       set({ isLoading: false, error: error instanceof Error ? error.message : '载入存档失败' })
+    }
+  },
+
+  async deleteSave(saveId) {
+    const { gameState } = get()
+    if (!gameState) return
+    set({ isLoading: true, error: null })
+    try {
+      await gameApi.deleteSave(gameState.session_id, saveId)
+      set((state) => ({
+        saves: state.saves.filter((save) => save.save_id !== saveId),
+        isLoading: false,
+      }))
+    } catch (error) {
+      set({ isLoading: false, error: error instanceof Error ? error.message : '删除存档失败' })
     }
   },
 }))

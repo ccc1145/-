@@ -85,6 +85,8 @@ export interface GameState {
     }
     flags: Record<string, boolean>
   }
+  narrative: string
+  available_choices: Choice[]
   recent_events: EventRecord[]
   free_input_history: FreeInputRecord[]
 }
@@ -138,4 +140,11 @@ export interface SaveInfo {
   save_id: string
   label: string
   saved_at: string
+}
+
+export interface LoadGameResponse {
+  state: GameState
+  available_choices: Choice[]
+  free_input_enabled: boolean
+  game_over: boolean
 }

@@ -7,9 +7,10 @@ interface SavePanelProps {
   onClose: () => void
   onSave: (label: string) => Promise<void>
   onLoad: (saveId: string) => Promise<void>
+  onDelete: (saveId: string) => Promise<void>
 }
 
-export function SavePanel({ saves, isLoading, onClose, onSave, onLoad }: SavePanelProps) {
+export function SavePanel({ saves, isLoading, onClose, onSave, onLoad, onDelete }: SavePanelProps) {
   const [label, setLabel] = useState('')
 
   async function handleSave() {
@@ -70,14 +71,24 @@ export function SavePanel({ saves, isLoading, onClose, onSave, onLoad }: SavePan
                     {new Date(save.saved_at).toLocaleString('zh-CN')}
                   </time>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => void onLoad(save.save_id)}
-                  disabled={isLoading}
-                  className="shrink-0 rounded-lg border border-emerald-200/20 px-3 py-1.5 text-xs text-emerald-100/80 hover:bg-emerald-100/10 disabled:opacity-40"
-                >
-                  载入
-                </button>
+                <div className="flex shrink-0 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => void onLoad(save.save_id)}
+                    disabled={isLoading}
+                    className="rounded-lg border border-emerald-200/20 px-3 py-1.5 text-xs text-emerald-100/80 hover:bg-emerald-100/10 disabled:opacity-40"
+                  >
+                    载入
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => window.confirm(`确定删除存档“${save.label}”吗？`) && void onDelete(save.save_id)}
+                    disabled={isLoading}
+                    className="rounded-lg border border-red-200/15 px-3 py-1.5 text-xs text-red-200/65 hover:bg-red-100/10 disabled:opacity-40"
+                  >
+                    删除
+                  </button>
+                </div>
               </div>
             ))
           )}

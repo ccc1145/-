@@ -4,6 +4,7 @@ import type {
   ActionRequest,
   ActionResponse,
   GameState,
+  LoadGameResponse,
   SaveInfo,
   StartSessionRequest,
   StartSessionResponse,
@@ -22,8 +23,10 @@ const http = axios.create({
 
 function getErrorMessage(error: unknown): string {
   if (axios.isAxiosError(error)) {
-    const data = error.response?.data as { message?: string; error?: string } | undefined
-    return data?.message ?? data?.error ?? error.message ?? '网络请求失败'
+    const data = error.response?.data as
+      | { detail?: string; message?: string; error?: string }
+      | undefined
+    return data?.detail ?? data?.message ?? data?.error ?? error.message ?? '网络请求失败'
   }
 
   if (error instanceof Error) {
@@ -96,13 +99,22 @@ export const gameApi = {
     }
   },
 
-  async loadGame(sessionId: string, saveId: string): Promise<GameState> {
+  async loadGame(sessionId: string, saveId: string): Promise<LoadGameResponse> {
     try {
       if (USE_MOCK) return await mockApi.loadGame(sessionId, saveId)
-      const response = await http.post<{ state: GameState }>(`/session/${sessionId}/load`, {
+      const response = await http.post<LoadGameResponse>(`/session/${sessionId}/load`, {
         save_id: saveId,
       })
-      return response.data.state
+      return response.data
+    } catch (error) {
+      throw new Error(getErrorMessage(error), { cause: error })
+    }
+  },
+
+  async deleteSave(sessionId: string, saveId: string): Promise<void> {
+    try {
+      if (USE_MOCK) return await mockApi.deleteSave(sessionId, saveId)
+      await http.delete(`/session/${sessionId}/saves/${saveId}`)
     } catch (error) {
       throw new Error(getErrorMessage(error), { cause: error })
     }
