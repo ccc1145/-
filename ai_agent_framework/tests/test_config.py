@@ -9,7 +9,7 @@ from ai_agent_framework.config.settings import (
 
 def test_default_settings():
     s = Settings()
-    assert s.llm.model == "deepseek-chat"
+    assert s.llm.model == "deepseek-v4-flash"
     assert s.rag.splitter.chunk_size == 500
     assert s.rag.retrieval.strategy == "hybrid"
 

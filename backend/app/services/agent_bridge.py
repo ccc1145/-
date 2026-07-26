@@ -23,8 +23,10 @@ logger = logging.getLogger(__name__)
 
 class AgentBridge:
     def __init__(self):
-        provider = os.getenv("LLM_PROVIDER", "deepseek")
-        model = os.getenv("LLM_MODEL", "deepseek-chat")
+        # DeepSeek exposes an OpenAI-compatible API, so the framework uses its
+        # OpenAI-compatible client while requests still go to DeepSeek.
+        provider = os.getenv("LLM_PROVIDER", "openai")
+        model = os.getenv("LLM_MODEL", "deepseek-v4-flash")
         api_key = os.getenv("OPENAI_API_KEY") or os.getenv("DEEPSEEK_API_KEY", "")
         base_url = os.getenv("LLM_BASE_URL", "")
 

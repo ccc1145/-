@@ -24,7 +24,9 @@ def get_llm(config: LLMConfig | None = None) -> Any:
     if config.provider == "fake":
         return _FakeLLM()
 
-    if config.provider == "openai":
+    # "deepseek" is accepted as a user-friendly alias. Both values use the
+    # OpenAI-compatible client; base_url determines the actual API endpoint.
+    if config.provider in {"openai", "deepseek"}:
         from langchain_openai import ChatOpenAI
 
         return ChatOpenAI(
