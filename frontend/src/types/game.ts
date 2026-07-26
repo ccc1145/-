@@ -140,6 +140,13 @@ export interface SaveInfo {
   save_id: string
   label: string
   saved_at: string
+  player_name: string
+  turn_count: number
+}
+
+export interface AuthResponse {
+  token: string
+  username: string
 }
 
 export interface LoadGameResponse {
@@ -147,4 +154,13 @@ export interface LoadGameResponse {
   available_choices: Choice[]
   free_input_enabled: boolean
   game_over: boolean
+}
+
+export type NotificationTone = 'positive' | 'negative' | 'neutral'
+
+export interface StateNotification {
+  id: number
+  label: string
+  detail: string
+  tone: NotificationTone
 }

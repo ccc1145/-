@@ -3,6 +3,7 @@ import { mockApi } from './mock'
 import type {
   ActionRequest,
   ActionResponse,
+  AuthResponse,
   GameState,
   LoadGameResponse,
   SaveInfo,
@@ -20,6 +21,20 @@ const http = axios.create({
     'Content-Type': 'application/json',
   },
 })
+
+const TOKEN_KEY = 'xiuxian_auth_token'
+const savedToken = localStorage.getItem(TOKEN_KEY)
+if (savedToken) http.defaults.headers.common.Authorization = `Bearer ${savedToken}`
+
+function applyToken(token: string | null) {
+  if (token) {
+    localStorage.setItem(TOKEN_KEY, token)
+    http.defaults.headers.common.Authorization = `Bearer ${token}`
+  } else {
+    localStorage.removeItem(TOKEN_KEY)
+    delete http.defaults.headers.common.Authorization
+  }
+}
 
 function getErrorMessage(error: unknown): string {
   if (axios.isAxiosError(error)) {
@@ -51,6 +66,41 @@ async function submitRealAction(
 
 export const gameApi = {
   isMockMode: USE_MOCK,
+
+  async register(username: string, password: string): Promise<AuthResponse> {
+    try {
+      const response = await http.post<AuthResponse>('/auth/register', { username, password })
+      applyToken(response.data.token)
+      return response.data
+    } catch (error) {
+      throw new Error(getErrorMessage(error), { cause: error })
+    }
+  },
+
+  async login(username: string, password: string): Promise<AuthResponse> {
+    try {
+      const response = await http.post<AuthResponse>('/auth/login', { username, password })
+      applyToken(response.data.token)
+      return response.data
+    } catch (error) {
+      throw new Error(getErrorMessage(error), { cause: error })
+    }
+  },
+
+  async restoreAuth(): Promise<string | null> {
+    if (!localStorage.getItem(TOKEN_KEY)) return null
+    try {
+      const response = await http.get<{ username: string }>('/auth/me')
+      return response.data.username
+    } catch {
+      applyToken(null)
+      return null
+    }
+  },
+
+  logout(): void {
+    applyToken(null)
+  },
 
   async startSession(request: StartSessionRequest): Promise<StartSessionResponse> {
     try {

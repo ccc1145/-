@@ -67,6 +67,7 @@ export function SavePanel({ saves, isLoading, onClose, onSave, onLoad, onDelete 
               <div key={save.save_id} className="flex items-center justify-between gap-3 rounded-xl border border-stone-100/10 bg-black/15 px-4 py-3">
                 <div className="min-w-0">
                   <p className="truncate text-sm text-stone-100">{save.label}</p>
+                  <p className="mt-1 text-xs text-amber-100/60">{save.player_name} · 第 {save.turn_count} 回合</p>
                   <time className="mt-1 block text-xs text-stone-500" dateTime={save.saved_at}>
                     {new Date(save.saved_at).toLocaleString('zh-CN')}
                   </time>

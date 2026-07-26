@@ -2,6 +2,7 @@ import type { GameState } from '../types/game'
 
 interface StatusPanelProps {
   state: GameState
+  changePulse?: boolean
 }
 
 function affinityText(value: number): string {
@@ -20,13 +21,13 @@ function sectText(flags: Record<string, boolean>): string {
   return '中洲 · 待启灵者'
 }
 
-export function StatusPanel({ state }: StatusPanelProps) {
+export function StatusPanel({ state, changePulse = false }: StatusPanelProps) {
   const { player, world, npcs } = state
   const currentLevelStart = (player.realm.minor - 1) * 90
   const progress = Math.max(0, Math.min(100, ((player.cultivation - currentLevelStart) / 90) * 100))
 
   return (
-    <aside className="space-y-4">
+    <aside className={`space-y-4 ${changePulse ? 'status-panel-pulse' : ''}`}>
       <section className="ink-panel rounded-2xl border border-amber-100/15 p-5">
         <div className="mb-5 flex items-center gap-3 border-b border-amber-100/10 pb-4">
           <div className="flex size-11 items-center justify-center rounded-full border border-amber-200/20 bg-amber-100/[0.06] font-serif text-xl text-amber-100">

@@ -146,7 +146,7 @@ function addRecentEvent(
     state_changes: stateChanges,
     timestamp: new Date().toISOString(),
   })
-  state.recent_events = state.recent_events.slice(-10)
+  // Intentionally keep the complete playthrough for the story archive.
 }
 
 function createResponse(
@@ -490,6 +490,14 @@ export const mockApi = {
     ]
     currentState.narrative = openingSegments.map((segment) => segment.text).join('\n')
     currentState.available_choices = structuredClone(currentChoices)
+    currentState.recent_events = [{
+      turn: 0,
+      scene_id: currentState.current_scene_id,
+      narrative: currentState.narrative,
+      player_choice: '踏入仙途',
+      state_changes: {},
+      timestamp: new Date().toISOString(),
+    }]
 
     return {
       session_id: currentState.session_id,
@@ -545,6 +553,8 @@ export const mockApi = {
       save_id: `save_${Date.now()}`,
       label: label.trim() || `第 ${currentState.turn_count} 回合`,
       saved_at: new Date().toISOString(),
+      player_name: currentState.player.name,
+      turn_count: currentState.turn_count,
     }
     mockSaves.push({ ...info, state: cloneState(currentState) })
     return info
@@ -559,6 +569,8 @@ export const mockApi = {
       save_id: save.save_id,
       label: save.label,
       saved_at: save.saved_at,
+      player_name: save.player_name,
+      turn_count: save.turn_count,
     }))
   },
 

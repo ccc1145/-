@@ -4,6 +4,9 @@ interface GameHeaderProps {
   onRestart: () => void
   onToggleDebug: () => void
   onOpenSaves: () => void
+  onOpenHistory: () => void
+  username: string | null
+  onLogout: () => void
 }
 
 export function GameHeader({
@@ -12,6 +15,9 @@ export function GameHeader({
   onRestart,
   onToggleDebug,
   onOpenSaves,
+  onOpenHistory,
+  username,
+  onLogout,
 }: GameHeaderProps) {
   return (
     <header className="relative z-20 border-b border-amber-100/10 bg-[#08100e]/85 backdrop-blur-xl">
@@ -24,12 +30,20 @@ export function GameHeader({
         </div>
 
         <div className="flex items-center gap-2">
+          {username && <span className="hidden text-xs text-stone-400 sm:inline">{username}</span>}
           <span className="hidden rounded-full border border-emerald-300/15 bg-emerald-200/5 px-3 py-1.5 text-xs text-emerald-100/70 sm:inline-flex">
             {isMockMode ? 'Mock 演示模式' : '后端联调模式'}
           </span>
 
           {hasSession && (
             <>
+              <button
+                type="button"
+                onClick={onOpenHistory}
+                className="rounded-lg border border-stone-100/10 px-3 py-2 text-xs text-stone-300 transition hover:border-stone-100/25 hover:text-white"
+              >
+                剧情回顾
+              </button>
               <button
                 type="button"
                 onClick={onOpenSaves}
@@ -52,6 +66,11 @@ export function GameHeader({
                 重新开局
               </button>
             </>
+          )}
+          {username && (
+            <button type="button" onClick={onLogout} className="rounded-lg border border-stone-100/10 px-3 py-2 text-xs text-stone-300 hover:text-white">
+              退出登录
+            </button>
           )}
         </div>
       </div>
