@@ -122,7 +122,13 @@ class GameEngine:
 
         return EngineResult(
             state=working_state,
-            event_context=self._event_context(scene, choice, changes, payload),
+            event_context=self._event_context(
+                previous_scene=scene,
+                current_scene=next_scene,
+                choice=choice,
+                changes=changes,
+                payload=payload,
+            ),
             available_choices=self.available_choices(working_state),
             scene_changed=previous_scene != working_state.current_scene_id,
             game_over=next_scene.game_over,
@@ -222,17 +228,20 @@ class GameEngine:
 
     def _event_context(
         self,
-        scene: SceneConfig,
+        previous_scene: SceneConfig,
+        current_scene: SceneConfig,
         choice: ChoiceConfig,
         changes: list[dict[str, Any]],
         payload: str,
     ) -> dict[str, Any]:
         return {
             "request_type": "scene_narrative",
-            "event_id": self._scene_events.get(scene.scene_id),
-            "scene": scene.model_dump(),
+            "event_id": self._scene_events.get(current_scene.scene_id),
+            # Narrative and displayed choices must describe the same scene.
+            "scene": current_scene.model_dump(),
+            "previous_scene": previous_scene.model_dump(),
             "player_input": {"type": "choice", "id": payload, "text": choice.text},
             "authoritative_state_changes": changes,
-            "next_scene_id": choice.next_scene or scene.scene_id,
-            "agent_guidance": scene.agent_guidance,
+            "next_scene_id": current_scene.scene_id,
+            "agent_guidance": current_scene.agent_guidance,
         }

@@ -21,6 +21,10 @@ def test_real_api_fixed_flow_and_scene_changed():
     assert entered.status_code == 200
     assert entered.json()["scene_changed"] is True
     assert entered.json()["scene_id"] == "00_awakening_selection:awakening_ceremony"
+    assert (
+        entered.json()["new_state"]["current_scene_id"]
+        == "00_awakening_selection:awakening_ceremony"
+    )
     assert entered.json()["degraded"] is True
 
     completed = client.post(

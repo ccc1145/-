@@ -172,6 +172,20 @@ def test_formal_content_reaches_free_exploration(sect):
     assert state.world.flags["induction_completed"] is True
 
 
+def test_choice_narrative_context_uses_destination_scene():
+    from app.schemas.game_state import WorldState
+
+    engine = GameEngine.from_formal_content(Path(__file__).parents[2] / "content")
+    state = GameState(world=WorldState(flags={"game_start": True}))
+
+    result = engine.process_action(state, "choice", "proceed_to_awakening")
+
+    assert result.state.current_scene_id == "00_awakening_selection:awakening_ceremony"
+    assert result.event_context["scene"]["scene_id"] == result.state.current_scene_id
+    assert result.event_context["previous_scene"]["scene_id"] == "start"
+    assert "测灵石" in result.event_context["scene"]["description"]
+
+
 def test_free_exploration_actions_apply_whitelisted_effects():
     engine = GameEngine.from_formal_content(Path(__file__).parents[2] / "content")
     state = GameState(current_scene_id="free_exploration")
