@@ -38,6 +38,9 @@ function fallbackSegments(text: string): NarrativeSegment[] {
   return [{ type: 'narration', text }]
 }
 
+// Prevent a slow response from an abandoned playthrough from restoring stale state.
+let lifecycleVersion = 0
+
 export const useGameStore = create<GameStore>((set, get) => ({
   gameState: null,
   narrativeSegments: [],
@@ -59,13 +62,28 @@ export const useGameStore = create<GameStore>((set, get) => ({
       return
     }
 
-    set({ isLoading: true, error: null, gameOver: false, agentThought: null, degraded: false })
+    const requestVersion = ++lifecycleVersion
+    set({
+      gameState: null,
+      narrativeSegments: [],
+      availableChoices: [],
+      freeInputEnabled: false,
+      isLoading: true,
+      error: null,
+      gameOver: false,
+      agentThought: null,
+      degraded: false,
+      saves: [],
+      savePanelVisible: false,
+    })
 
     try {
       const response = await gameApi.startSession({
         player_name: cleanName,
         spirit_root_type: spiritRootType,
       })
+
+      if (requestVersion !== lifecycleVersion) return
 
       set({
         gameState: response.initial_state,
@@ -77,6 +95,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         isLoading: false,
       })
     } catch (error) {
+      if (requestVersion !== lifecycleVersion) return
       set({
         isLoading: false,
         error: error instanceof Error ? error.message : '开始游戏失败',
@@ -87,6 +106,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
   async chooseAction(choiceId) {
     const { gameState, isLoading } = get()
     if (!gameState || isLoading) return
+    const requestVersion = lifecycleVersion
+    const sessionId = gameState.session_id
 
     set({ isLoading: true, error: null })
 
@@ -95,6 +116,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
         action_type: 'choice',
         payload: choiceId,
       })
+
+      if (
+        requestVersion !== lifecycleVersion ||
+        get().gameState?.session_id !== sessionId
+      ) return
 
       set({
         gameState: response.new_state,
@@ -110,6 +136,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         isLoading: false,
       })
     } catch (error) {
+      if (requestVersion !== lifecycleVersion) return
       set({
         isLoading: false,
         error: error instanceof Error ? error.message : '提交选择失败',
@@ -126,6 +153,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
       set({ error: '请输入你想说的话或想做的事。' })
       return
     }
+    const requestVersion = lifecycleVersion
+    const sessionId = gameState.session_id
 
     set({ isLoading: true, error: null })
 
@@ -134,6 +163,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
         action_type: 'free_input',
         payload: cleanText,
       })
+
+      if (
+        requestVersion !== lifecycleVersion ||
+        get().gameState?.session_id !== sessionId
+      ) return
 
       set({
         gameState: response.new_state,
@@ -149,6 +183,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         isLoading: false,
       })
     } catch (error) {
+      if (requestVersion !== lifecycleVersion) return
       set({
         isLoading: false,
         error: error instanceof Error ? error.message : '发送自由输入失败',
@@ -157,6 +192,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
 
   restartGame() {
+    lifecycleVersion += 1
     gameApi.resetMock()
     set({
       gameState: null,
