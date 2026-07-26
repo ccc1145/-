@@ -17,7 +17,7 @@ def test_agent_can_only_supply_narrative(game_state):
         }
 
     narrative = AgentBridge(malicious_provider).generate(engine_result)
-    assert narrative.narrative == "由 Agent 生成的叙事"
+    assert narrative["narrative"] == "由 Agent 生成的叙事"
     assert engine_result.state.player.cultivation == 5
 
 
@@ -30,9 +30,9 @@ def test_agent_failure_uses_deterministic_fallback(game_state):
         raise TimeoutError("LLM timeout")
 
     narrative = AgentBridge(failing_provider).generate(engine_result)
-    assert narrative.degraded is True
-    assert narrative.narrative == engine_result.fallback_narrative
-    assert narrative.narrative_segments[0].text == narrative.narrative
+    assert narrative["degraded"] is True
+    assert narrative["narrative"] == engine_result.fallback_narrative
+    assert narrative["narrative_segments"][0]["text"] == narrative["narrative"]
 
 
 def test_empty_agent_output_also_degrades(game_state):
@@ -40,4 +40,4 @@ def test_empty_agent_output_also_degrades(game_state):
         game_state, "choice", "enter_trial"
     )
     narrative = AgentBridge(lambda _context: {"narrative": ""}).generate(engine_result)
-    assert narrative.degraded is True
+    assert narrative["degraded"] is True

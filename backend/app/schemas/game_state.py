@@ -162,3 +162,15 @@ class SaveResponse(BaseModel):
     save_id: str
     label: str
     saved_at: str
+    player_name: str = ""
+    turn_count: int = 0
+
+
+class AuthRequest(BaseModel):
+    username: str
+    password: str
+
+
+class AuthResponse(BaseModel):
+    token: str
+    username: str

@@ -189,6 +189,40 @@ button:disabled {
   animation: pulse-dot 1s ease-in-out infinite;
 }
 
+.state-toast {
+  animation: toast-enter 0.32s ease-out both;
+}
+
+.status-text-flash {
+  animation: status-text-flash 0.9s ease-out both;
+}
+
+.status-panel-pulse .stat-card,
+.status-panel-pulse section:last-child {
+  animation: status-panel-pulse 0.85s ease-out both;
+}
+
+@keyframes toast-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(18px, -5px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes status-text-flash {
+  0%, 100% { text-shadow: none; }
+  40% { text-shadow: 0 0 14px currentColor; }
+}
+
+@keyframes status-panel-pulse {
+  0%, 100% { border-color: rgba(255, 255, 255, 0.065); }
+  35% { border-color: rgba(253, 230, 138, 0.45); background-color: rgba(253, 230, 138, 0.075); }
+}
+
 @keyframes pulse-dot {
   0%,
   100% {

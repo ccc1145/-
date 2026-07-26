@@ -7,9 +7,10 @@ interface SavePanelProps {
   onClose: () => void
   onSave: (label: string) => Promise<void>
   onLoad: (saveId: string) => Promise<void>
+  onDelete: (saveId: string) => Promise<void>
 }
 
-export function SavePanel({ saves, isLoading, onClose, onSave, onLoad }: SavePanelProps) {
+export function SavePanel({ saves, isLoading, onClose, onSave, onLoad, onDelete }: SavePanelProps) {
   const [label, setLabel] = useState('')
 
   async function handleSave() {
@@ -66,18 +67,29 @@ export function SavePanel({ saves, isLoading, onClose, onSave, onLoad }: SavePan
               <div key={save.save_id} className="flex items-center justify-between gap-3 rounded-xl border border-stone-100/10 bg-black/15 px-4 py-3">
                 <div className="min-w-0">
                   <p className="truncate text-sm text-stone-100">{save.label}</p>
+                  <p className="mt-1 text-xs text-amber-100/60">{save.player_name} · 第 {save.turn_count} 回合</p>
                   <time className="mt-1 block text-xs text-stone-500" dateTime={save.saved_at}>
                     {new Date(save.saved_at).toLocaleString('zh-CN')}
                   </time>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => void onLoad(save.save_id)}
-                  disabled={isLoading}
-                  className="shrink-0 rounded-lg border border-emerald-200/20 px-3 py-1.5 text-xs text-emerald-100/80 hover:bg-emerald-100/10 disabled:opacity-40"
-                >
-                  载入
-                </button>
+                <div className="flex shrink-0 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => void onLoad(save.save_id)}
+                    disabled={isLoading}
+                    className="rounded-lg border border-emerald-200/20 px-3 py-1.5 text-xs text-emerald-100/80 hover:bg-emerald-100/10 disabled:opacity-40"
+                  >
+                    载入
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => window.confirm(`确定删除存档“${save.label}”吗？`) && void onDelete(save.save_id)}
+                    disabled={isLoading}
+                    className="rounded-lg border border-red-200/15 px-3 py-1.5 text-xs text-red-200/65 hover:bg-red-100/10 disabled:opacity-40"
+                  >
+                    删除
+                  </button>
+                </div>
               </div>
             ))
           )}

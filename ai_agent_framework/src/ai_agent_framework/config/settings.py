@@ -20,11 +20,12 @@ from pydantic_settings import (
 
 class LLMConfig(BaseModel):
     provider: str = "openai"
-    model: str = "deepseek-chat"
+    model: str = "deepseek-v4-flash"
     api_key: str = ""
     base_url: str = "https://api.deepseek.com/v1"
     temperature: float = 0.3
     max_tokens: int = 2048
+    request_timeout: float = 20.0
 
 
 class EmbeddingConfig(BaseModel):
