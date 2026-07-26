@@ -37,15 +37,21 @@ class AgentBridge:
             "provider": provider,
             "model": model,
             "api_key": api_key,
-            "temperature": 0.7,
-            "max_tokens": 1024,
+            "temperature": float(os.getenv("LLM_TEMPERATURE", "0.7")),
+            "max_tokens": int(os.getenv("LLM_MAX_TOKENS", "640")),
+            "request_timeout": float(os.getenv("LLM_TIMEOUT_SECONDS", "20")),
         }
         if base_url:
             llm_config_kwargs["base_url"] = base_url
 
         llm_config = LLMConfig(**llm_config_kwargs)
         self.llm_adapter = NarrativeLLMAdapter(llm_config)
-        self.controller = NarrativeController(llm_adapter=self.llm_adapter)
+        self.controller = NarrativeController(
+            llm_adapter=self.llm_adapter,
+            max_retries=int(os.getenv("LLM_MAX_RETRIES", "1")),
+            timeout=float(os.getenv("LLM_TIMEOUT_SECONDS", "20")),
+            backoff_base=0,
+        )
         self.memory = MemoryManager()
         self.world_books = WorldBookLoader(PROJECT_ROOT / "content")
         self.npc_cards = NPCCardLoader(PROJECT_ROOT / "content")
@@ -130,6 +136,8 @@ class AgentBridge:
                     memory=memory_ctx,
                     npc_cards=npc_cards,
                     world_book_context=world_book_context,
+                    # Local intent recognition avoids a second DeepSeek request.
+                    use_llm_intent=False,
                 )
             else:
                 result = self.controller.generate_scene_narrative(

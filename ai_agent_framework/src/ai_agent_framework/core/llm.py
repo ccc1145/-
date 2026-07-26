@@ -35,6 +35,7 @@ def get_llm(config: LLMConfig | None = None) -> Any:
             base_url=config.base_url,
             temperature=config.temperature,
             max_tokens=config.max_tokens,
+            timeout=config.request_timeout,
         )
 
     raise ValueError(f"未知的 LLM provider: {config.provider}")
