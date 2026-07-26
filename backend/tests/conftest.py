@@ -1,4 +1,8 @@
+import os
+
 import pytest
+
+os.environ.setdefault("LLM_PROVIDER", "fake")
 
 from app.schemas.game_state import GameState, NPCState, PlayerState
 

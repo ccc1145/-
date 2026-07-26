@@ -83,6 +83,7 @@ class NarrativeController:
         event_context: dict[str, Any],
         memory: dict[str, Any],
         npc_cards: dict[str, Any],
+        world_book_context: str = "",
     ) -> dict[str, Any]:
         """生成场景叙事。
 
@@ -95,6 +96,7 @@ class NarrativeController:
             world_knowledge=get_all_world_knowledge(),
             current_scene=current_scene,
             npc_cards=npc_cards,
+            world_book_context=world_book_context,
         )
         user_prompt = self._prompt_builder.build_scene_narrative_prompt(
             game_state=game_state,
@@ -185,6 +187,7 @@ class NarrativeController:
         npc_cards: dict[str, Any],
         memory: dict[str, Any],
         use_llm_intent: bool = True,
+        world_book_context: str = "",
     ) -> dict[str, Any]:
         """处理玩家自由输入，生成回应。
 
@@ -227,6 +230,7 @@ class NarrativeController:
             world_knowledge=get_all_world_knowledge(),
             current_scene=current_scene,
             npc_cards=npc_cards,
+            world_book_context=world_book_context,
         )
         user_prompt = self._free_input_processor.build_response_prompt(
             player_input=player_input,

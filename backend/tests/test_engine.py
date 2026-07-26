@@ -5,6 +5,7 @@ import pytest
 from app.engine import ConfigurationError, GameEngine, InvalidAction
 from app.engine.models import SceneConfig
 from app.engine.realm import RealmCalculator
+from app.schemas.game_state import GameState
 
 
 def test_fixed_entrance_trial_flow_is_deterministic(game_state):
@@ -148,3 +149,36 @@ def test_invalid_scene_graph_is_rejected():
                 )
             }
         )
+
+
+@pytest.mark.parametrize("sect", ["xuanqing", "shenwu", "fulong", "hongchen"])
+def test_formal_content_reaches_free_exploration(sect):
+    from app.schemas.game_state import WorldState
+
+    engine = GameEngine.from_formal_content(Path(__file__).parents[2] / "content")
+    state = GameState(world=WorldState(flags={"game_start": True}))
+
+    for _ in range(30):
+        if state.current_scene_id == "free_exploration":
+            break
+        choices = engine.available_choices(state)
+        assert choices
+        preferred = f"choose_{sect}"
+        choice = next((item for item in choices if item.id == preferred), choices[0])
+        state = engine.process_action(state, "choice", choice.id).state
+
+    assert state.current_scene_id == "free_exploration"
+    assert state.world.flags[f"{sect}_disciple"] is True
+    assert state.world.flags["induction_completed"] is True
+
+
+def test_free_exploration_actions_apply_whitelisted_effects():
+    engine = GameEngine.from_formal_content(Path(__file__).parents[2] / "content")
+    state = GameState(current_scene_id="free_exploration")
+
+    cultivated = engine.process_action(state, "free_input", "我在静室打坐修炼")
+    assert cultivated.state.player.cultivation == 3
+    assert cultivated.event_context["authoritative_state_changes"]
+
+    moved = engine.process_action(cultivated.state, "free_input", "前往藏经阁")
+    assert moved.state.world.current_location == "藏经阁/藏经楼"

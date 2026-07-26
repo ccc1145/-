@@ -16,21 +16,20 @@ def test_real_api_fixed_flow_and_scene_changed():
 
     entered = client.post(
         f"/api/session/{session_id}/action",
-        json={"action_type": "choice", "payload": "enter_trial"},
+        json={"action_type": "choice", "payload": "proceed_to_awakening"},
     )
     assert entered.status_code == 200
     assert entered.json()["scene_changed"] is True
-    assert entered.json()["scene_id"] == "trial_grounds"
+    assert entered.json()["scene_id"] == "00_awakening_selection:awakening_ceremony"
     assert entered.json()["degraded"] is True
 
     completed = client.post(
         f"/api/session/{session_id}/action",
-        json={"action_type": "choice", "payload": "touch_stone"},
+        json={"action_type": "choice", "payload": "touch_the_stone"},
     )
     data = completed.json()
-    assert data["new_state"]["player"]["cultivation"] == 15
-    assert data["new_state"]["player"]["realm"]["minor"] == 2
-    assert data["new_state"]["world"]["flags"]["trial_completed"] is True
+    assert data["scene_id"] == "00_awakening_selection:root_result"
+    assert data["new_state"]["world"]["flags"]["awakening_performed"] is True
 
 
 def test_invalid_choice_returns_400_without_changing_state():
@@ -68,19 +67,19 @@ def test_save_and_load_preserve_engine_state():
     ).json()["session_id"]
     client.post(
         f"/api/session/{session_id}/action",
-        json={"action_type": "choice", "payload": "enter_trial"},
+        json={"action_type": "choice", "payload": "proceed_to_awakening"},
     )
     saved = client.post(
         f"/api/session/{session_id}/save", json={"label": "试炼前"}
     ).json()
     client.post(
         f"/api/session/{session_id}/action",
-        json={"action_type": "choice", "payload": "touch_stone"},
+        json={"action_type": "choice", "payload": "touch_the_stone"},
     )
 
     loaded = client.post(
         f"/api/session/{session_id}/load", json={"save_id": saved["save_id"]}
     )
     assert loaded.status_code == 200
-    assert loaded.json()["state"]["player"]["cultivation"] == 5
-    assert loaded.json()["state"]["current_scene_id"] == "trial_grounds"
+    assert loaded.json()["state"]["player"]["cultivation"] == 0
+    assert loaded.json()["state"]["current_scene_id"] == "00_awakening_selection:awakening_ceremony"

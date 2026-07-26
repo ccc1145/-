@@ -25,7 +25,7 @@ from sqlalchemy.orm import Session
 from app.config import engine, Base, SessionLocal
 from app.models.game_state import GameSave
 from app.schemas.game_state import (
-    GameState, PlayerState, WorldState, WorldTime, NPCState,
+    GameState, PlayerState, WorldState, WorldTime, NPCState, FreeInputRecord,
     SpiritRoot, Choice, NarrativeSegment,
     StartSessionRequest, StartSessionResponse,
     ActionRequest, ActionResponse,
@@ -77,7 +77,7 @@ def get_db():
 sessions: dict[str, GameState] = {}
 
 # 初始化引擎与 Agent 桥接
-game_engine = GameEngine.default()
+game_engine = GameEngine.from_formal_content(PROJECT_ROOT / "content")
 agent_bridge = AgentBridge()
 
 # ==================== 健康检查 ====================
@@ -107,26 +107,16 @@ def start_session(request: StartSessionRequest):
             name=request.player_name,
             spirit_root=SpiritRoot(type=root_type, quality=quality),
         ),
-        npcs={
-            "master": NPCState(
-                id="master",
-                name="玄清真人",
-                affinity=0,
-                location="试炼场",
-            )
-        },
+        npcs={},
         world=WorldState(
-            current_location="试炼场",
+            current_location="中洲启灵台",
             time=WorldTime(day=1, period="上午"),
-            flags={},
+            flags={"game_start": True},
         ),
     )
     sessions[session_id] = state
 
-    opening_narrative = (
-        "你站在青云山门前，薄雾如纱，石阶蜿蜒而上。"
-        "守门师兄抬眼看了看你，沉声道：‘新来的？进去吧，试炼马上就要开始了。’"
-    )
+    opening_narrative = game_engine.scene("start").description
     choices = game_engine.available_choices(state)
 
     # 持久化叙事和选项到 GameState 中（便于存档）
@@ -149,6 +139,21 @@ def perform_action(session_id: str, request: ActionRequest, db: Session = Depend
     state = sessions.get(session_id)
     if not state:
         raise HTTPException(status_code=404, detail="会话不存在")
+
+    # Lazily add an explicitly mentioned authored NPC to authoritative state.
+    if request.action_type == "free_input":
+        for npc_id, card in agent_bridge.npc_cards.get_all_npcs().items():
+            npc_name = card.get("name", "")
+            if npc_name and npc_name in request.payload and npc_id not in state.npcs:
+                initial = card.get("initial_state", {})
+                state.npcs[npc_id] = NPCState(
+                    id=npc_id,
+                    name=npc_name,
+                    affinity=initial.get("affinity", 0),
+                    location=initial.get("location", ""),
+                    known_info=card.get("knowledge", []),
+                )
+                break
 
     # ---------- 1. 尝试引擎处理 ----------
     try:
@@ -183,11 +188,23 @@ def perform_action(session_id: str, request: ActionRequest, db: Session = Depend
     # ---------- 3. 更新内存状态 ----------
     sessions[session_id] = engine_result.state
     state = engine_result.state
+    if engine_result.scene_changed:
+        state.world.current_location = game_engine.scene(state.current_scene_id).name
 
     # 将叙事和选项写入 state（用于存档）
     state.narrative = narrative_result["narrative"]
     choices = engine_result.available_choices
     state.available_choices = [c.dict() if hasattr(c, 'dict') else c for c in choices]
+
+    if request.action_type == "free_input":
+        state.free_input_history.append(
+            FreeInputRecord(
+                turn=state.turn_count,
+                input_text=request.payload,
+                interpreted_intent=(narrative_result.get("intent") or {}).get("intent", "unknown"),
+                narrative_response=narrative_result["narrative"],
+            )
+        )
 
     try:
         auto_save = GameSave(

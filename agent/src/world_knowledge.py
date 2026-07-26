@@ -53,12 +53,9 @@ def get_all_world_knowledge() -> list[str]:
 
     Day 10 后改为从 content/world/*.md 动态加载。
     """
-    return (
-        CULTIVATION_KNOWLEDGE
-        + SECT_KNOWLEDGE
-        + GEOGRAPHY_KNOWLEDGE
-        + ACTION_KNOWLEDGE
-    )
+    # Sect and geography lore now comes from content/world_books via keyword
+    # injection. Do not inject the obsolete Qingyun MVP lore globally.
+    return CULTIVATION_KNOWLEDGE + ACTION_KNOWLEDGE
 
 
 def get_knowledge_by_category(category: str) -> list[str]:
