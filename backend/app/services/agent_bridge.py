@@ -38,8 +38,8 @@ class AgentBridge:
             "model": model,
             "api_key": api_key,
             "temperature": float(os.getenv("LLM_TEMPERATURE", "0.7")),
-            "max_tokens": int(os.getenv("LLM_MAX_TOKENS", "640")),
-            "request_timeout": float(os.getenv("LLM_TIMEOUT_SECONDS", "20")),
+            "max_tokens": int(os.getenv("LLM_MAX_TOKENS", "1024")),
+            "request_timeout": float(os.getenv("LLM_TIMEOUT_SECONDS", "30")),
         }
         if base_url:
             llm_config_kwargs["base_url"] = base_url
@@ -48,9 +48,9 @@ class AgentBridge:
         self.llm_adapter = NarrativeLLMAdapter(llm_config)
         self.controller = NarrativeController(
             llm_adapter=self.llm_adapter,
-            max_retries=int(os.getenv("LLM_MAX_RETRIES", "1")),
-            timeout=float(os.getenv("LLM_TIMEOUT_SECONDS", "20")),
-            backoff_base=0,
+            max_retries=int(os.getenv("LLM_MAX_RETRIES", "2")),
+            timeout=float(os.getenv("LLM_TIMEOUT_SECONDS", "30")),
+            backoff_base=0.2,
         )
         # Narrative memory must be isolated per game session. A shared memory
         # causes the second request to inherit dialogue from another playthrough.
