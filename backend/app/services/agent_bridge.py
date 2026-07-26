@@ -52,7 +52,9 @@ class AgentBridge:
             timeout=float(os.getenv("LLM_TIMEOUT_SECONDS", "20")),
             backoff_base=0,
         )
-        self.memory = MemoryManager()
+        # Narrative memory must be isolated per game session. A shared memory
+        # causes the second request to inherit dialogue from another playthrough.
+        self._memories: dict[str, MemoryManager] = {}
         self.world_books = WorldBookLoader(PROJECT_ROOT / "content")
         self.npc_cards = NPCCardLoader(PROJECT_ROOT / "content")
         self.world_books.load_all()
@@ -87,6 +89,8 @@ class AgentBridge:
             }
         try:
             state = engine_result.state
+            session_id = getattr(state, "session_id", "default") or "default"
+            memory = self._memories.setdefault(session_id, MemoryManager())
             game_state_dict = state.dict()
 
             scene_data = engine_result.event_context.get("scene", {})
@@ -104,7 +108,7 @@ class AgentBridge:
 
             event_context = getattr(engine_result, 'state_changes', {})
 
-            memory_ctx = self.memory.get_prompt_context()
+            memory_ctx = memory.get_prompt_context()
 
             npc_cards = {}
             for npc_id, npc_obj in state.npcs.items():
@@ -152,7 +156,7 @@ class AgentBridge:
 
             narrative_text = result.get("narrative", "")
             if not result.get("degraded"):
-                self.memory.add_turn(
+                memory.add_turn(
                     turn=state.turn_count,
                     player_input=payload,
                     narrative=narrative_text,
@@ -177,5 +181,8 @@ class AgentBridge:
                 "degraded": True,
             }
 
-    def reset_memory(self):
-        self.memory.clear()
+    def reset_memory(self, session_id: str | None = None):
+        if session_id is None:
+            self._memories.clear()
+        else:
+            self._memories.pop(session_id, None)
