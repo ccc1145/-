@@ -19,6 +19,15 @@ scenes:
     description: "次日清晨，你再次来到承运殿。这一次没有策论也没有誓言——谢蕴教习在殿外等你，手里拿着一卷名册。她看到你，笑了笑：'走吧，带你去你的住处。'——然后她看了看名册，微微顿了一下，那一下顿得极短。你注意到了，但你不知道那意味着什么。"
     mood: "确定身份后的新鲜感"
     free_input_enabled: true
+    choices:
+      - id: "ask_about_palace_status"
+        text: "询问宫籍身份、课程与需要遵守的规矩"
+        next_scene: "first_day"
+        effects: [{type: "set_flag", flag: "fulong_induction_inquisitive", value: true}]
+      - id: "follow_to_residence"
+        text: "收好名册凭证，跟随教习前往住处"
+        next_scene: "first_day"
+        effects: [{type: "set_flag", flag: "fulong_induction_composed", value: true}]
     agent_guidance:
       setting_details:
         - "承运殿清晨的光线和昨天不太一样——可能是心情变了"

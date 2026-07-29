@@ -20,6 +20,15 @@ scenes:
     description: "次日清晨，你被叫到传功殿。殿里没有你想象中的教习——站着的是一个看起来不像武修的人，文质彬彬的，手里拿着一卷名单。他抬头看了你一眼：'铁鹫跟我说了。你被分到了——（看了一眼名单）——破阵军。走吧，带你去驻地。'"
     mood: "新鲜、未知、一切刚开始"
     free_input_enabled: true
+    choices:
+      - id: "ask_about_unit"
+        text: "询问所属军种与日后的操练职责"
+        next_scene: "first_day"
+        effects: [{type: "set_flag", flag: "shenwu_induction_inquisitive", value: true}]
+      - id: "accept_unit_assignment"
+        text: "记下军令，立即前往所属营帐报到"
+        next_scene: "first_day"
+        effects: [{type: "set_flag", flag: "shenwu_induction_disciplined", value: true}]
     agent_guidance:
       setting_details:
         - "传功殿内不像玄清宗那么书卷气——墙上挂着战图，案上摆着兵略玉简"

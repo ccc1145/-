@@ -26,6 +26,15 @@ scenes:
     description: "神都玉带河上，华灯初上。一艘三层高的华丽画舫停在水中央，雕梁画栋的红灯笼倒映在水面上，随着水波轻轻晃动。丝竹声从舫中隐隐传出，偶尔夹杂着笑声和杯盏碰撞的声音。你被带上了舫——不是从正门，而是从侧面一道不起眼的小梯。二楼转三楼的楼梯口，有人拦住了你。'第一次来？'对方打量了你一眼，然后让开了路。"
     mood: "灯红酒绿、暗流涌动"
     free_input_enabled: true
+    choices:
+      - id: "board_barge_openly"
+        text: "从容登上画舫，坦然接受众人的打量"
+        next_scene: "observation_trial"
+        effects: [{type: "set_flag", flag: "hongchen_arrived_openly", value: true}]
+      - id: "observe_barge_carefully"
+        text: "留意宾客与侍者的神色，谨慎登上画舫"
+        next_scene: "observation_trial"
+        effects: [{type: "set_flag", flag: "hongchen_arrived_observantly", value: true}]
     agent_guidance:
       setting_details:
         - "百花舫外观华丽，一至二层对外开放，三层需特定信物方可入内"
@@ -47,6 +56,15 @@ scenes:
     description: "三楼的厢房。窗外是玉带河的夜灯和丝竹声，窗内是一桌酒菜。杜若坐在你对面，笑着给你倒了一杯酒。她自己也倒了一杯，举起来，没有急着喝——只是举着，透过酒杯的琥珀色液体看着你。'你的事——我听说过一些。'她笑得很自然。'来，先喝一杯，不用急着说。'"
     mood: "轻松的试探——每一句话都是钩子"
     free_input_enabled: true
+    choices:
+      - id: "answer_du_rou_directly"
+        text: "直视杜若，坦诚回答她的问题"
+        next_scene: "illusion_trial"
+        effects: [{type: "set_flag", flag: "hongchen_answered_honestly", value: true}]
+      - id: "probe_du_rou_intent"
+        text: "先观察她的语气与神态，再谨慎作答"
+        next_scene: "illusion_trial"
+        effects: [{type: "set_flag", flag: "hongchen_answered_carefully", value: true}]
     agent_guidance:
       setting_details:
         - "厢房不大但雅致——墙上挂着一幅山水画，案上放着一把未出鞘的短匕（装饰品）"
@@ -70,6 +88,15 @@ scenes:
     description: "你记得自己是怎么来到这里的——杜若问了你一个问题，你回答了，然后世界就像水面泛起了涟漪一样扭曲了一瞬。等你的视线重新聚焦时，你发现自己已经不在那间厢房里了。你站在一条陌生的街道上——可能是某个你从未去过的城市，也可能是一个你只在梦里见过的地方。"
     mood: "似真似幻、不知身在何处"
     free_input_enabled: true
+    choices:
+      - id: "follow_illusion_emotion"
+        text: "顺着幻境中的情感前行，寻找其根源"
+        next_scene: "oath_trial"
+        effects: [{type: "set_flag", flag: "hongchen_embraced_emotion", value: true}]
+      - id: "question_illusion_reality"
+        text: "守住本心，寻找幻境中的矛盾与破绽"
+        next_scene: "oath_trial"
+        effects: [{type: "set_flag", flag: "hongchen_saw_through_illusion", value: true}]
     agent_guidance:
       setting_details:
         - "幻境场景由 Agent 根据玩家背景生成——可能繁华、可能荒凉、可能熟悉、可能陌生"
@@ -92,6 +119,15 @@ scenes:
     description: "你醒了——或者说是你的意识从幻境中抽离了回来。你还是在那间厢房里，酒还是温的，窗外的灯还是亮着的。杜若还是坐在你对面。她看着你，表情和之前一样——但目光里多了一丝认真的东西。她没有说话，起身走到墙边——你之前没注意到那面墙上有一道暗门。她推开门，做了一个'请'的手势。门后是一条狭窄的向下的通道。"
     mood: "从试探到确认"
     free_input_enabled: true
+    choices:
+      - id: "accept_blood_oath"
+        text: "确认誓约内容，以血为印完成入门誓约"
+        next_scene: "result"
+        effects: [{type: "set_flag", flag: "hongchen_oath_accepted", value: true}]
+      - id: "clarify_blood_oath"
+        text: "询问誓约边界，确认代价后再落下血印"
+        next_scene: "result"
+        effects: [{type: "set_flag", flag: "hongchen_oath_clarified", value: true}]
     agent_guidance:
       setting_details:
         - "暗门后的通道向下延伸——通往百花舫的底层密室"

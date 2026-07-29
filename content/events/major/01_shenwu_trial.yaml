@@ -26,6 +26,15 @@ scenes:
     description: "你站在龙陨山脉的山脚下。空气中弥漫着浓烈的金铁之气——混着若有若无的血腥味。耳边是远处演武场传来的撞击声和百炼瀑的轰鸣声。脚下是玄黑石铺成的地面，踩上去比普通石头凉得多。头顶是看不到顶的千钧道——一千零八十级石阶，每一级都在散发着若有若无的重力波动。铁鹫战队长站在第一级台阶旁，目光扫过你们所有人，只说了一个字：'上。'"
     mood: "沉重、压迫、战意"
     free_input_enabled: true
+    choices:
+      - id: "follow_tiejiu_immediately"
+        text: "不作迟疑，立即跟上铁鹫登山"
+        next_scene: "trial_stamina"
+        effects: [{type: "set_flag", flag: "shenwu_decisive_start", value: true}]
+      - id: "adjust_breath_before_climb"
+        text: "先调整呼吸，再稳步踏上千钧道"
+        next_scene: "trial_stamina"
+        effects: [{type: "set_flag", flag: "shenwu_steady_start", value: true}]
     agent_guidance:
       setting_details:
         - "龙陨山脉由玄黑石与暗青色铁岩构成，整座宗门像一座从山体里凿出来的要塞"
@@ -47,6 +56,15 @@ scenes:
     description: "你背上了那副百斤铁甲。第一级台阶——只是比普通台阶重一点。第十级——双腿开始感受到压力。第五十级——呼吸变粗了。第一百级——你开始明白为什么叫'千钧道'了。你抬头看了看——还有九百八十级。铁鹫战队长在高处，只是一个越来越小的背影。"
     mood: "沉重、漫长得看不到尽头"
     free_input_enabled: true
+    choices:
+      - id: "climb_at_steady_pace"
+        text: "保持自己的节奏，一步一步继续攀登"
+        next_scene: "trial_resistance"
+        effects: [{type: "set_flag", flag: "shenwu_stamina_steady", value: true}]
+      - id: "help_fallen_candidate"
+        text: "扶起身旁摔倒的应试者，一同向上"
+        next_scene: "trial_resistance"
+        effects: [{type: "set_flag", flag: "shenwu_helped_candidate", value: true}]
     agent_guidance:
       setting_details:
         - "千钧道共一千零八十级，越往上走重力越大"
@@ -70,6 +88,15 @@ scenes:
     description: "翻过千钧道顶后，你被带到了另一处地方——一处天然形成的煞气汇聚之地。池中煞气如黑雾翻涌，站在边缘就能感到皮肤被针扎般的刺痛。越靠近池边越痛，胸口发闷、气息紊乱。铁鹫战队长站在池边，旁边还有一个你没有见过的教习模样的人——那人手里拿着一卷空白记录，看着你们，像是要记录什么数据。"
     mood: "刺痛、压抑、意志的拉锯"
     free_input_enabled: true
+    choices:
+      - id: "resist_sha_with_breathing"
+        text: "运转吐纳，稳步深入煞气池边缘"
+        next_scene: "trial_combat"
+        effects: [{type: "set_flag", flag: "shenwu_resisted_methodically", value: true}]
+      - id: "resist_sha_with_will"
+        text: "咬牙直面煞气，以意志坚持到极限"
+        next_scene: "trial_combat"
+        effects: [{type: "set_flag", flag: "shenwu_resisted_fiercely", value: true}]
     agent_guidance:
       setting_details:
         - "煞气池是龙陨山脉天然形成的煞气汇聚之地，池中黑雾翻涌"
@@ -93,6 +120,15 @@ scenes:
     description: "最后一座试剑台——悬浮的黑曜石平台，由玄铁锁链与主峰相连。对面站着一个神武门的内门弟子，面无表情地看着你，手中握着训练用的制式铁剑。台侧站着铁鹫——还有一个你没有见过的大块头，一身重甲，双臂抱胸，沉默地看着台上。铁鹫说了一句话：'三十回合。不倒，算过。'然后他退到台边。"
     mood: "紧张、安静、风雨欲来"
     free_input_enabled: true
+    choices:
+      - id: "fight_defensively"
+        text: "稳守门户，观察对手招式并伺机反击"
+        next_scene: "result"
+        effects: [{type: "set_flag", flag: "shenwu_combat_defensive", value: true}]
+      - id: "fight_aggressively"
+        text: "抢占先机，以连续进攻争取主动"
+        next_scene: "result"
+        effects: [{type: "set_flag", flag: "shenwu_combat_aggressive", value: true}]
     agent_guidance:
       setting_details:
         - "试剑台是数十座悬浮于主峰之间的巨大黑曜石平台之一"

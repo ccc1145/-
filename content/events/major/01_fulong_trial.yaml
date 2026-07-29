@@ -26,6 +26,15 @@ scenes:
     description: "你站在神都皇城的东门外。承运殿的明黄色琉璃瓦在日光下像一团燃烧的火焰，远在皇城之外就能望见。四周的一切都那么井然有序——行人的脚步不紧不慢，店铺的门面整洁气派，空气中隐隐有龙脉灵气的精纯气息。一个穿着宫服的侍者核验了你的举荐信函，微微欠身：'请随我来。'"
     mood: "庄严、规整、无形的压迫感"
     free_input_enabled: true
+    choices:
+      - id: "enter_palace_formally"
+        text: "整理衣冠，依礼进入承运殿"
+        next_scene: "written_trial"
+        effects: [{type: "set_flag", flag: "fulong_observed_etiquette", value: true}]
+      - id: "observe_capital_first"
+        text: "先观察皇城气象，再进入承运殿"
+        next_scene: "written_trial"
+        effects: [{type: "set_flag", flag: "fulong_observed_capital", value: true}]
     agent_guidance:
       setting_details:
         - "神都皇城东北角是扶龙宫所在的宫苑区域，与皇宫有高墙甬道相连"
@@ -47,6 +56,15 @@ scenes:
     description: "承运殿内，金柱盘龙，地面铺以灵气氤氲的白玉砖。徐伯潜教习立于殿中央，手持一卷玉简。殿侧站着一个人——宁怀璟，你没有见过他，但一眼就能看出他是宗室子弟，因为那种从小养成的姿态是装不出来的。徐伯潜看着你，开口：'既然有举荐，想必不是庸才。我且问你几个问题。'"
     mood: "肃穆、正式、暗流涌动"
     free_input_enabled: true
+    choices:
+      - id: "argue_for_stability"
+        text: "以安定民生为先，写下治世策论"
+        next_scene: "combat_trial"
+        effects: [{type: "set_flag", flag: "fulong_policy_stability", value: true}]
+      - id: "argue_for_reform"
+        text: "直指积弊，写下革新求变的策论"
+        next_scene: "combat_trial"
+        effects: [{type: "set_flag", flag: "fulong_policy_reform", value: true}]
     agent_guidance:
       setting_details:
         - "承运殿正中最上方设九龙御座——宫主讲法时坐于此位"
@@ -69,6 +87,15 @@ scenes:
     description: "策论之后，你被带到了百艺苑的演武场。这里比承运殿轻松了不少——至少看起来是这样。演武场的地面铺设有精密阵纹，可以模拟各种环境。一个温和的女教习站在场边——她看起来比徐伯潜好说话多了。她看着你，笑了笑：'别紧张。就是看看你的基础。'"
     mood: "比承运殿轻松——但也不能大意"
     free_input_enabled: true
+    choices:
+      - id: "command_methodically"
+        text: "先判断阵势，再有条不紊地调度应对"
+        next_scene: "oath_trial"
+        effects: [{type: "set_flag", flag: "fulong_combat_methodical", value: true}]
+      - id: "seize_combat_initiative"
+        text: "抓住阵势破绽，主动出击夺取先机"
+        next_scene: "oath_trial"
+        effects: [{type: "set_flag", flag: "fulong_combat_decisive", value: true}]
     agent_guidance:
       setting_details:
         - "百艺苑占地极广，划分出丹房、器室、演武场、悟道静室、阵法阁等多个区域"
@@ -91,6 +118,15 @@ scenes:
     description: "你再次站在承运殿中。这一次殿里多了一个人——一个甲胄冰冷的卫士站在殿门旁，手按在剑柄上，目光如铁。徐伯潜教习站在九龙御座前方，手里多了一卷金色的卷轴。他展开卷轴，说了一句话：'跪下。宣读誓言。'殿内安静得能听到香灰落下的声音。"
     mood: "庄严到近乎压迫"
     free_input_enabled: true
+    choices:
+      - id: "swear_oath_solemnly"
+        text: "郑重宣读誓言，接受王朝与宗门的责任"
+        next_scene: "result"
+        effects: [{type: "set_flag", flag: "fulong_oath_accepted", value: true}]
+      - id: "ask_oath_duty"
+        text: "先询问誓言所负责任，再作出承诺"
+        next_scene: "result"
+        effects: [{type: "set_flag", flag: "fulong_oath_questioned", value: true}]
     agent_guidance:
       setting_details:
         - "承运殿回到了最初的起点，但气氛完全不同"

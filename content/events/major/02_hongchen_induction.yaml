@@ -19,6 +19,15 @@ scenes:
     description: "第二天，你被叫到百花舫后院的账房。沈娘子坐在那里，面前放着一本新开的档案——你的名字已经写在扉页上了。她没有抬头，但你进来的时候她停了一下笔。'你的身份——从今天起是百花舫新来的杂役。'她翻了翻面前的一张纸，语气平淡。'管吃管住，月钱两枚灵石。遇到有人问——你是从南边逃荒来的，有个远房亲戚在百花舫做事，托了关系进来的。记住这套说辞，别漏了。'"
     mood: "一切从头开始"
     free_input_enabled: true
+    choices:
+      - id: "ask_about_new_role"
+        text: "询问新身份的职责与红尘阁的规矩"
+        next_scene: "first_day"
+        effects: [{type: "set_flag", flag: "hongchen_induction_inquisitive", value: true}]
+      - id: "accept_new_role"
+        text: "接受安排，先从眼前的差事做起"
+        next_scene: "first_day"
+        effects: [{type: "set_flag", flag: "hongchen_induction_adaptable", value: true}]
     agent_guidance:
       setting_details:
         - "账房不大，案上堆着账本和散落的灵石"
