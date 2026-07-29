@@ -75,3 +75,5 @@ def test_choice_prompt_receives_selected_text_and_full_event_context():
         == "00_awakening_selection:awakening_ceremony"
     )
     assert "triggered_effects" in captured["event_context"]
+    assert "尚未执行" in captured["current_scene"]["description"]
+    assert "将手放在测灵石上" in captured["current_scene"]["description"]

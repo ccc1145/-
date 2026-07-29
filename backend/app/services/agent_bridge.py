@@ -94,10 +94,21 @@ class AgentBridge:
             game_state_dict = state.dict()
 
             scene_data = engine_result.event_context.get("scene", {})
+            pending_choice_texts = [
+                choice.text if hasattr(choice, "text") else str(choice.get("text", ""))
+                for choice in engine_result.available_choices
+            ]
+            narrative_boundary = ""
+            if pending_choice_texts:
+                narrative_boundary = (
+                    "\n叙事边界：以下是玩家尚未执行的下一步选项，严禁提前描写其动作、"
+                    "结果或后果：" + "；".join(pending_choice_texts)
+                )
             current_scene = {
                 "id": state.current_scene_id,
                 "name": scene_data.get("name", state.world.current_location),
-                "description": scene_data.get("description", state.world.current_location),
+                "description": scene_data.get("description", state.world.current_location)
+                + narrative_boundary,
                 "mood": scene_data.get("mood", ""),
             }
 
