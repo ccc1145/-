@@ -54,8 +54,16 @@ if (-not (Test-Path $backendPython)) {
     Invoke-Checked $python @('-m', 'venv', $venvDir) 'Could not create the backend virtual environment.'
 }
 
-& $backendPython -c 'import fastapi, uvicorn, sqlalchemy, yaml, dotenv, httpx, jinja2' 2>$null
-if ($LASTEXITCODE -ne 0) {
+$backendDependenciesAvailable = $false
+try {
+    & $backendPython -c 'import fastapi, uvicorn, sqlalchemy, yaml, dotenv, httpx, jinja2' 2>$null
+    $backendDependenciesAvailable = ($LASTEXITCODE -eq 0)
+} catch {
+    # A newly created virtual environment is expected to fail this import check.
+    # Treat it as a signal to install requirements instead of aborting startup.
+    $backendDependenciesAvailable = $false
+}
+if (-not $backendDependenciesAvailable) {
     Write-Host '      Missing dependencies detected; installing them now...' -ForegroundColor Yellow
     Invoke-Checked $backendPython @('-m', 'pip', 'install', '-r', (Join-Path $backendDir 'requirements.txt')) `
         'Backend dependency installation failed.'
