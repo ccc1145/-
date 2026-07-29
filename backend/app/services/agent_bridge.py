@@ -101,12 +101,22 @@ class AgentBridge:
                 "mood": scene_data.get("mood", ""),
             }
 
-            player_input = {
-                "type": action_type,
-                "value": payload,
-            }
+            event_context = dict(engine_result.event_context)
+            authored_input = event_context.get("player_input", {})
+            if action_type == "choice" and isinstance(authored_input, dict):
+                player_input = {
+                    "type": "choice",
+                    "choice_id": authored_input.get("id", payload),
+                    "choice_text": authored_input.get("text", payload),
+                }
+            else:
+                player_input = {"type": action_type, "text": payload, "value": payload}
 
-            event_context = getattr(engine_result, 'state_changes', {})
+            # Prompt templates historically call this list triggered_effects.
+            event_context.setdefault(
+                "triggered_effects",
+                event_context.get("authoritative_state_changes", []),
+            )
 
             memory_ctx = memory.get_prompt_context()
 
