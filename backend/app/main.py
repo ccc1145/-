@@ -157,7 +157,7 @@ def start_session(request: StartSessionRequest, user: User = Depends(get_current
     """开始新游戏"""
     session_id = str(uuid4())
     root_type = request.spirit_root_type or random.choice(["金", "木", "水", "火", "土", "杂灵根"])
-    quality = random.randint(1, 10)
+    quality = random.randint(1, 9)
 
     state = GameState(
         session_id=session_id,

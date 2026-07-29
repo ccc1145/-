@@ -30,6 +30,25 @@ SECT_CONTEXTS = {
 }
 
 
+def _spirit_root_boundary(root_type: str, quality: int) -> str:
+    if quality >= 9:
+        assessment = (
+            "极品、最高品级，灵气极其纯粹强盛，属于罕见天才资质；"
+            "旁观者只能震惊、赞叹、艳羡或郑重关注，严禁描写为驳杂、普通、欠佳或令人惋惜"
+        )
+    elif quality >= 7:
+        assessment = "上等品级，灵气凝练，资质优秀"
+    elif quality >= 4:
+        assessment = "中等品级，资质稳健"
+    else:
+        assessment = "下等品级，灵气较弱或驳杂，修行会更艰难"
+    return (
+        f"\n灵根锁定：玩家是{root_type}灵根，品质{quality}等（{assessment}）。"
+        "本世界灵根品质为一至九等，数字越大品质越高，九等为极品。"
+        "所有光芒强度、纯度、人物反应和评价必须与此完全一致。"
+    )
+
+
 class AgentBridge:
     def __init__(self, provider: Callable[[dict[str, Any]], dict[str, Any]] | None = None):
         self._provider = provider
@@ -99,6 +118,10 @@ class AgentBridge:
             session_id = getattr(state, "session_id", "default") or "default"
             memory = self._memories.setdefault(session_id, MemoryManager())
             game_state_dict = state.dict()
+            spirit_root = state.player.spirit_root
+            spirit_root_boundary = _spirit_root_boundary(
+                spirit_root.type, spirit_root.quality
+            )
 
             scene_data = engine_result.event_context.get("scene", {})
             pending_choice_texts = [
@@ -134,6 +157,7 @@ class AgentBridge:
                 "id": state.current_scene_id,
                 "name": scene_data.get("name", state.world.current_location),
                 "description": scene_data.get("description", state.world.current_location)
+                + spirit_root_boundary
                 + sect_boundary
                 + narrative_boundary,
                 "mood": scene_data.get("mood", ""),

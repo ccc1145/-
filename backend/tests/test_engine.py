@@ -313,3 +313,10 @@ def test_free_exploration_actions_apply_whitelisted_effects():
 
     moved = engine.process_action(cultivated.state, "free_input", "前往藏经阁")
     assert moved.state.world.current_location == "藏经阁/藏经楼"
+
+
+def test_legacy_tenth_grade_spirit_root_is_migrated_to_ninth_grade():
+    from app.schemas.game_state import SpiritRoot
+
+    root = SpiritRoot.model_validate({"type": "木", "quality": 10})
+    assert root.quality == 9

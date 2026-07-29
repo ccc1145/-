@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import List, Dict, Optional, Any, Literal
 
 # ---------- 基础类型 ----------
@@ -31,7 +31,13 @@ class PlayerAttributes(BaseModel):
 
 class SpiritRoot(BaseModel):
     type: SpiritRootType = "杂灵根"
-    quality: int = 1
+    quality: int = Field(default=1, ge=1, le=9)
+
+    @field_validator("quality", mode="before")
+    @classmethod
+    def normalize_legacy_quality(cls, value: Any) -> int:
+        """旧版本曾错误生成十等灵根；加载时统一迁移为最高九等。"""
+        return min(9, max(1, int(value)))
 
 
 class Realm(BaseModel):

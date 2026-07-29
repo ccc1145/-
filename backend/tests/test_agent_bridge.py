@@ -106,3 +106,33 @@ def test_selected_sect_is_locked_in_agent_prompt():
     description = captured["current_scene"]["description"]
     assert "宗门锁定：玩家已选择扶龙宫" in description
     assert "不得把地点、人物、称谓或试炼写成玄清宗" in description
+
+
+def test_ninth_grade_spirit_root_is_described_as_supreme_not_inferior():
+    engine = GameEngine.from_formal_content(Path(__file__).parents[2] / "content")
+    state = GameState(
+        session_id="supreme-root-prompt-test",
+        current_scene_id="00_awakening_selection:awakening_ceremony",
+    )
+    state.player.spirit_root.type = "木"
+    state.player.spirit_root.quality = 9
+    engine_result = engine.process_action(state, "choice", "touch_the_stone")
+    captured = {}
+
+    class CapturingController:
+        def generate_scene_narrative(self, **kwargs):
+            captured.update(kwargs)
+            return {
+                "narrative": "木灵根九等",
+                "narrative_segments": [{"type": "narration", "text": "木灵根九等"}],
+                "degraded": False,
+            }
+
+    bridge = AgentBridge()
+    bridge.controller = CapturingController()
+    bridge.generate(engine_result, "choice", "touch_the_stone")
+
+    description = captured["current_scene"]["description"]
+    assert "木灵根，品质9等" in description
+    assert "九等为极品" in description
+    assert "严禁描写为驳杂、普通、欠佳或令人惋惜" in description
