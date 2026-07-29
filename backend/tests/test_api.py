@@ -37,6 +37,10 @@ def test_real_api_fixed_flow_and_scene_changed():
         == "00_awakening_selection:awakening_ceremony"
     )
     assert entered.json()["degraded"] is True
+    assert (
+        entered.json()["new_state"]["recent_events"][-1]["player_choice"]
+        == "踏入中洲，参加启灵仪式"
+    )
 
     completed = client.post(
         f"/api/session/{session_id}/action",

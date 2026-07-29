@@ -23,8 +23,13 @@ scenes:
     choices:
       - id: "ask_about_unit"
         text: "询问所属军种与日后的操练职责"
-        next_scene: "first_day"
+        condition: {type: "flag", flag: "shenwu_induction_inquisitive", equals: false}
+        next_scene: "army_assignment"
         effects: [{type: "set_flag", flag: "shenwu_induction_inquisitive", value: true}]
+      - id: "report_after_unit_explanation"
+        text: "听完军种说明，前往所属营帐报到"
+        condition: {type: "flag", flag: "shenwu_induction_inquisitive", equals: true}
+        next_scene: "first_day"
       - id: "accept_unit_assignment"
         text: "记下军令，立即前往所属营帐报到"
         next_scene: "first_day"

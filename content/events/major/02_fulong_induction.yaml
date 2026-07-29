@@ -22,8 +22,13 @@ scenes:
     choices:
       - id: "ask_about_palace_status"
         text: "询问宫籍身份、课程与需要遵守的规矩"
-        next_scene: "first_day"
+        condition: {type: "flag", flag: "fulong_induction_inquisitive", equals: false}
+        next_scene: "status_assignment"
         effects: [{type: "set_flag", flag: "fulong_induction_inquisitive", value: true}]
+      - id: "settle_after_status_explanation"
+        text: "了解宫规与课程后，跟随教习前往住处"
+        condition: {type: "flag", flag: "fulong_induction_inquisitive", equals: true}
+        next_scene: "first_day"
       - id: "follow_to_residence"
         text: "收好名册凭证，跟随教习前往住处"
         next_scene: "first_day"

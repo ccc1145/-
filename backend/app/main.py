@@ -212,6 +212,20 @@ def perform_action(session_id: str, request: ActionRequest, db: Session = Depend
     if not state:
         raise HTTPException(status_code=404, detail="会话不存在")
 
+    # API 使用稳定的英文 choice id 提交动作，但面向玩家的剧情回顾应保存中文文案。
+    player_action_text = request.payload
+    if request.action_type == "choice":
+        selected_choice = next(
+            (
+                choice
+                for choice in game_engine.available_choices(state)
+                if choice.id == request.payload
+            ),
+            None,
+        )
+        if selected_choice is not None:
+            player_action_text = selected_choice.text
+
     # Lazily add an explicitly mentioned authored NPC to authoritative state.
     if request.action_type == "free_input":
         for npc_id, card in agent_bridge.npc_cards.get_all_npcs().items():
@@ -283,7 +297,7 @@ def perform_action(session_id: str, request: ActionRequest, db: Session = Depend
             turn=state.turn_count,
             scene_id=state.current_scene_id,
             narrative=narrative_result["narrative"],
-            player_choice=request.payload,
+            player_choice=player_action_text,
             state_changes={
                 change.get("target", f"change_{index}"): change.get("after")
                 for index, change in enumerate(raw_changes)

@@ -23,8 +23,13 @@ scenes:
     choices:
       - id: "ask_about_academies"
         text: "向教习询问各院系的修行方向"
-        next_scene: "first_day"
+        condition: {type: "flag", flag: "xuanqing_induction_inquisitive", equals: false}
+        next_scene: "academy_assignment"
         effects: [{type: "set_flag", flag: "xuanqing_induction_inquisitive", value: true}]
+      - id: "choose_academy_after_explanation"
+        text: "了解各院方向后，跟随教习前往院系"
+        condition: {type: "flag", flag: "xuanqing_induction_inquisitive", equals: true}
+        next_scene: "first_day"
       - id: "follow_to_academy"
         text: "跟随教习前往分配给自己的院系"
         next_scene: "first_day"

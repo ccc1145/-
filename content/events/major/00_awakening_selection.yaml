@@ -95,10 +95,20 @@ scenes:
     choices:
       - id: "ask_about_result"
         text: "向启灵官询问灵根结果的含义"
+        condition: {type: "flag", flag: "spirit_root_explained", equals: false}
+        next_scene: "root_result"
+        effects:
+          - type: "set_flag"
+            flag: "spirit_root_explained"
+            value: true
+      - id: "continue_after_root_explanation"
+        text: "听完启灵官讲解，前往选择宗门"
+        condition: {type: "flag", flag: "spirit_root_explained", equals: true}
         next_scene: "sect_selection"
         effects:
           - type: "set_flag"
             flag: "awakening_completed"
+            value: true
       - id: "contemplate_result"
         text: "默默看着光芒消退，心中已有盘算"
         next_scene: "sect_selection"

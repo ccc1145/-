@@ -22,8 +22,13 @@ scenes:
     choices:
       - id: "ask_about_new_role"
         text: "询问新身份的职责与红尘阁的规矩"
-        next_scene: "first_day"
+        condition: {type: "flag", flag: "hongchen_induction_inquisitive", equals: false}
+        next_scene: "role_assignment"
         effects: [{type: "set_flag", flag: "hongchen_induction_inquisitive", value: true}]
+      - id: "begin_role_after_explanation"
+        text: "听完职责说明，开始第一日的差事"
+        condition: {type: "flag", flag: "hongchen_induction_inquisitive", equals: true}
+        next_scene: "first_day"
       - id: "accept_new_role"
         text: "接受安排，先从眼前的差事做起"
         next_scene: "first_day"

@@ -224,6 +224,63 @@ def test_asking_xuanqing_guide_does_not_start_written_trial():
     assert proceeded.state.current_scene_id == "01_xuanqing_trial:written_trial"
 
 
+@pytest.mark.parametrize(
+    ("scene_id", "question_id", "flag", "continue_id"),
+    [
+        (
+            "00_awakening_selection:root_result",
+            "ask_about_result",
+            "spirit_root_explained",
+            "continue_after_root_explanation",
+        ),
+        (
+            "01_fulong_trial:oath_trial",
+            "ask_oath_duty",
+            "fulong_oath_questioned",
+            "swear_after_clarification",
+        ),
+        (
+            "02_xuanqing_induction:academy_assignment",
+            "ask_about_academies",
+            "xuanqing_induction_inquisitive",
+            "choose_academy_after_explanation",
+        ),
+        (
+            "02_shenwu_induction:army_assignment",
+            "ask_about_unit",
+            "shenwu_induction_inquisitive",
+            "report_after_unit_explanation",
+        ),
+        (
+            "02_fulong_induction:status_assignment",
+            "ask_about_palace_status",
+            "fulong_induction_inquisitive",
+            "settle_after_status_explanation",
+        ),
+        (
+            "02_hongchen_induction:role_assignment",
+            "ask_about_new_role",
+            "hongchen_induction_inquisitive",
+            "begin_role_after_explanation",
+        ),
+    ],
+)
+def test_inquiry_choices_wait_for_explicit_progression(
+    scene_id, question_id, flag, continue_id
+):
+    engine = GameEngine.from_formal_content(Path(__file__).parents[2] / "content")
+    state = GameState(current_scene_id=scene_id)
+
+    answered = engine.process_action(state, "choice", question_id)
+
+    assert answered.scene_changed is False
+    assert answered.state.current_scene_id == scene_id
+    assert answered.state.world.flags[flag] is True
+    choice_ids = [choice.id for choice in answered.available_choices]
+    assert question_id not in choice_ids
+    assert continue_id in choice_ids
+
+
 def test_free_exploration_actions_apply_whitelisted_effects():
     engine = GameEngine.from_formal_content(Path(__file__).parents[2] / "content")
     state = GameState(current_scene_id="free_exploration")

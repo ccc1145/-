@@ -125,8 +125,14 @@ scenes:
         effects: [{type: "set_flag", flag: "fulong_oath_accepted", value: true}]
       - id: "ask_oath_duty"
         text: "先询问誓言所负责任，再作出承诺"
-        next_scene: "result"
+        condition: {type: "flag", flag: "fulong_oath_questioned", equals: false}
+        next_scene: "oath_trial"
         effects: [{type: "set_flag", flag: "fulong_oath_questioned", value: true}]
+      - id: "swear_after_clarification"
+        text: "确认责任无误，郑重宣读入门誓言"
+        condition: {type: "flag", flag: "fulong_oath_questioned", equals: true}
+        next_scene: "result"
+        effects: [{type: "set_flag", flag: "fulong_oath_accepted", value: true}]
     agent_guidance:
       setting_details:
         - "承运殿回到了最初的起点，但气氛完全不同"
