@@ -204,6 +204,26 @@ def test_xuanqing_heart_trial_exposes_narrative_choices_before_result():
     assert result.available_choices[0].id == "accept_trial_result"
 
 
+def test_asking_xuanqing_guide_does_not_start_written_trial():
+    engine = GameEngine.from_formal_content(Path(__file__).parents[2] / "content")
+    state = GameState(current_scene_id="01_xuanqing_trial:arriving")
+
+    asked = engine.process_action(state, "choice", "ask_guide_about_trial")
+
+    assert asked.scene_changed is False
+    assert asked.state.current_scene_id == "01_xuanqing_trial:arriving"
+    assert asked.state.world.flags["xuanqing_prepared_carefully"] is True
+    assert [choice.id for choice in asked.available_choices] == [
+        "proceed_after_trial_briefing",
+        "observe_mountain_before_trial",
+    ]
+
+    proceeded = engine.process_action(
+        asked.state, "choice", "proceed_after_trial_briefing"
+    )
+    assert proceeded.state.current_scene_id == "01_xuanqing_trial:written_trial"
+
+
 def test_free_exploration_actions_apply_whitelisted_effects():
     engine = GameEngine.from_formal_content(Path(__file__).parents[2] / "content")
     state = GameState(current_scene_id="free_exploration")

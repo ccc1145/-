@@ -29,8 +29,19 @@ scenes:
     choices:
       - id: "ask_guide_about_trial"
         text: "向接引弟子询问试炼规矩"
-        next_scene: "written_trial"
+        condition:
+          type: "flag"
+          flag: "xuanqing_prepared_carefully"
+          equals: false
+        next_scene: "arriving"
         effects: [{type: "set_flag", flag: "xuanqing_prepared_carefully", value: true}]
+      - id: "proceed_after_trial_briefing"
+        text: "谢过接引弟子，前往传功殿参加文试"
+        condition:
+          type: "flag"
+          flag: "xuanqing_prepared_carefully"
+          equals: true
+        next_scene: "written_trial"
       - id: "observe_mountain_before_trial"
         text: "默记山门布局，静心准备试炼"
         next_scene: "written_trial"
