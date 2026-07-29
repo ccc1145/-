@@ -101,8 +101,11 @@ class AgentBridge:
             narrative_boundary = ""
             if pending_choice_texts:
                 narrative_boundary = (
-                    "\n叙事边界：以下是玩家尚未执行的下一步选项，严禁提前描写其动作、"
-                    "结果或后果：" + "；".join(pending_choice_texts)
+                    "\n叙事边界：前端只会显示以下系统选项："
+                    + "；".join(pending_choice_texts)
+                    + "。这些动作尚未执行，严禁提前描写其动作、结果或后果。"
+                    "叙事若引导玩家进行下一步，只能逐字使用上述选项，"
+                    "不得提出上述列表之外的二选一、多选或行动建议。"
                 )
             current_scene = {
                 "id": state.current_scene_id,

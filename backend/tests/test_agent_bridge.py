@@ -77,3 +77,5 @@ def test_choice_prompt_receives_selected_text_and_full_event_context():
     assert "triggered_effects" in captured["event_context"]
     assert "尚未执行" in captured["current_scene"]["description"]
     assert "将手放在测灵石上" in captured["current_scene"]["description"]
+    assert "前端只会显示以下系统选项" in captured["current_scene"]["description"]
+    assert "不得提出上述列表之外" in captured["current_scene"]["description"]
