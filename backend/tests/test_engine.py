@@ -186,6 +186,24 @@ def test_choice_narrative_context_uses_destination_scene():
     assert "测灵石" in result.event_context["scene"]["description"]
 
 
+def test_xuanqing_heart_trial_exposes_narrative_choices_before_result():
+    engine = GameEngine.from_formal_content(Path(__file__).parents[2] / "content")
+    state = GameState(current_scene_id="01_xuanqing_trial:heart_trial")
+
+    choices = engine.available_choices(state)
+
+    assert [choice.id for choice in choices] == [
+        "touch_wandao_stele",
+        "meditate_before_stele",
+    ]
+    assert all("领取弟子凭证" not in choice.text for choice in choices)
+
+    result = engine.process_action(state, "choice", "meditate_before_stele")
+    assert result.state.current_scene_id == "01_xuanqing_trial:result"
+    assert result.state.world.flags["xuanqing_heart_trial_meditated"] is True
+    assert result.available_choices[0].id == "accept_trial_result"
+
+
 def test_free_exploration_actions_apply_whitelisted_effects():
     engine = GameEngine.from_formal_content(Path(__file__).parents[2] / "content")
     state = GameState(current_scene_id="free_exploration")

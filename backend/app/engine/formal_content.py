@@ -109,6 +109,40 @@ def load_formal_content(
                 ]
                 choices.append(adapted)
 
+            # The authored Xuanqing heart trial is Agent-driven and therefore
+            # has no YAML choices. Expose its two narrative decisions as real
+            # engine choices so the UI cannot jump straight to the result.
+            if not choices and event_id == "01_xuanqing_trial" and local_id == "heart_trial":
+                next_scene = _scene_id(event_id, "result")
+                choices.extend(
+                    [
+                        {
+                            "id": "touch_wandao_stele",
+                            "text": "直接触碰碑文，静观心镜显化",
+                            "next_scene": next_scene,
+                            "effects": [
+                                {
+                                    "type": "set_flag",
+                                    "flag": "xuanqing_heart_trial_direct",
+                                    "value": True,
+                                }
+                            ],
+                        },
+                        {
+                            "id": "meditate_before_stele",
+                            "text": "先盘膝打坐，感受此地灵力流动",
+                            "next_scene": next_scene,
+                            "effects": [
+                                {
+                                    "type": "set_flag",
+                                    "flag": "xuanqing_heart_trial_meditated",
+                                    "value": True,
+                                }
+                            ],
+                        },
+                    ]
+                )
+
             if not choices and index < len(local_ids) - 1:
                 next_local = local_ids[index + 1]
                 choices.append(
