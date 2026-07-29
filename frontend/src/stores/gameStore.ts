@@ -6,6 +6,7 @@ import type {
   NarrativeSegment,
   SaveInfo,
   StateNotification,
+  StatusField,
   SpiritRootType,
 } from '../types/game'
 
@@ -56,24 +57,68 @@ let notificationId = 0
 
 function stateNotifications(previous: GameState, next: GameState): StateNotification[] {
   const messages: Omit<StateNotification, 'id'>[] = []
-  const addDelta = (label: string, before: number | null, after: number | null) => {
+  const addDelta = (
+    label: string,
+    before: number | null,
+    after: number | null,
+    statusField: StatusField,
+  ) => {
     if (before === null || after === null || before === after) return
     const delta = after - before
-    messages.push({ label, detail: `${delta > 0 ? '+' : ''}${delta}（当前 ${after}）`, tone: delta > 0 ? 'positive' : 'negative' })
+    messages.push({
+      label,
+      detail: `${delta > 0 ? '+' : ''}${delta}（当前 ${after}）`,
+      tone: delta > 0 ? 'positive' : 'negative',
+      statusField,
+    })
   }
 
-  addDelta('修为变化', previous.player.cultivation, next.player.cultivation)
-  addDelta('生命变化', previous.player.hp, next.player.hp)
-  addDelta('灵力变化', previous.player.mp, next.player.mp)
-  addDelta('灵石变化', previous.player.spirit_stones, next.player.spirit_stones)
+  addDelta('修为变化', previous.player.cultivation, next.player.cultivation, 'cultivation')
+  addDelta('生命变化', previous.player.hp, next.player.hp, 'hp')
+  addDelta('灵力变化', previous.player.mp, next.player.mp, 'mp')
+  addDelta('灵石变化', previous.player.spirit_stones, next.player.spirit_stones, 'spiritStones')
+  addDelta('力量变化', previous.player.attributes.strength, next.player.attributes.strength, 'strength')
+  addDelta('身法变化', previous.player.attributes.agility, next.player.attributes.agility, 'agility')
+  addDelta('神识变化', previous.player.attributes.intelligence, next.player.attributes.intelligence, 'intelligence')
+  addDelta('悟性变化', previous.player.attributes.perception, next.player.attributes.perception, 'perception')
+
+  if (previous.player.spirit_root.type !== next.player.spirit_root.type) {
+    messages.push({
+      label: '灵根变化',
+      detail: next.player.spirit_root.type,
+      tone: 'positive',
+      statusField: 'spiritRoot',
+    })
+  }
+  if (previous.player.spirit_root.quality !== next.player.spirit_root.quality) {
+    messages.push({
+      label: '灵根品质变化',
+      detail: `${next.player.spirit_root.quality} 等`,
+      tone: 'positive',
+      statusField: 'spiritRootQuality',
+    })
+  }
+  if (previous.player.skills.join('\u0000') !== next.player.skills.join('\u0000')) {
+    messages.push({
+      label: '功法变化',
+      detail: next.player.skills.length > 0 ? next.player.skills.join('、') : '暂无功法',
+      tone: next.player.skills.length >= previous.player.skills.length ? 'positive' : 'negative',
+      statusField: 'skills',
+    })
+  }
 
   if (previous.player.realm.major !== next.player.realm.major || previous.player.realm.minor !== next.player.realm.minor) {
-    messages.push({ label: '境界突破', detail: `${next.player.realm.major} ${next.player.realm.minor} 层`, tone: 'positive' })
+    messages.push({
+      label: '境界突破',
+      detail: `${next.player.realm.major} ${next.player.realm.minor} 层`,
+      tone: 'positive',
+      statusField: 'realm',
+    })
   }
 
   for (const [npcId, npc] of Object.entries(next.npcs)) {
     const before = previous.npcs[npcId]?.affinity ?? npc.affinity
-    if (before !== npc.affinity) addDelta(`${npc.name}好感`, before, npc.affinity)
+    if (before !== npc.affinity) addDelta(`${npc.name}好感`, before, npc.affinity, 'relations')
   }
 
   const previousItems = new Map(previous.player.inventory.map((item) => [item.item_id, item]))
@@ -82,15 +127,32 @@ function stateNotifications(previous: GameState, next: GameState): StateNotifica
     const before = previousItems.get(itemId)?.quantity ?? 0
     if (before !== item.quantity) {
       const delta = item.quantity - before
-      messages.push({ label: delta > 0 ? '获得道具' : '道具变化', detail: `${item.name} ${delta > 0 ? '+' : ''}${delta}（现有 ${item.quantity}）`, tone: delta > 0 ? 'positive' : 'negative' })
+      messages.push({
+        label: delta > 0 ? '获得道具' : '道具变化',
+        detail: `${item.name} ${delta > 0 ? '+' : ''}${delta}（现有 ${item.quantity}）`,
+        tone: delta > 0 ? 'positive' : 'negative',
+        statusField: 'inventory',
+      })
     }
   }
   for (const [itemId, item] of previousItems) {
-    if (!nextItems.has(itemId)) messages.push({ label: '消耗道具', detail: `${item.name} -${item.quantity}`, tone: 'negative' })
+    if (!nextItems.has(itemId)) {
+      messages.push({
+        label: '消耗道具',
+        detail: `${item.name} -${item.quantity}`,
+        tone: 'negative',
+        statusField: 'inventory',
+      })
+    }
   }
 
   if (previous.world.current_location !== next.world.current_location) {
-    messages.push({ label: '地点变更', detail: next.world.current_location, tone: 'neutral' })
+    messages.push({
+      label: '地点变更',
+      detail: next.world.current_location,
+      tone: 'neutral',
+      statusField: 'location',
+    })
   }
   return messages.map((message) => ({ ...message, id: ++notificationId }))
 }

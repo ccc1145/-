@@ -157,10 +157,27 @@ export interface LoadGameResponse {
 }
 
 export type NotificationTone = 'positive' | 'negative' | 'neutral'
+export type StatusField =
+  | 'cultivation'
+  | 'realm'
+  | 'spiritRoot'
+  | 'spiritRootQuality'
+  | 'strength'
+  | 'agility'
+  | 'intelligence'
+  | 'perception'
+  | 'hp'
+  | 'mp'
+  | 'spiritStones'
+  | 'skills'
+  | 'inventory'
+  | 'location'
+  | 'relations'
 
 export interface StateNotification {
   id: number
   label: string
   detail: string
   tone: NotificationTone
+  statusField: StatusField
 }

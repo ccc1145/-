@@ -13,6 +13,7 @@ import { StatusPanel } from './components/StatusPanel'
 import { StateNotifications } from './components/StateNotifications'
 import { TextDisplay } from './components/TextDisplay'
 import { useGameStore } from './stores/gameStore'
+import type { StatusField } from './types/game'
 
 function App() {
   const username = useGameStore((state) => state.username)
@@ -49,6 +50,10 @@ function App() {
   const login = useGameStore((state) => state.login)
   const register = useGameStore((state) => state.register)
   const logout = useGameStore((state) => state.logout)
+  const statusChangeIds = notifications.reduce<Partial<Record<StatusField, number>>>((fields, notification) => {
+    fields[notification.statusField] = notification.id
+    return fields
+  }, {})
 
   useEffect(() => {
     void restoreAuth()
@@ -116,7 +121,7 @@ function App() {
             {debugVisible && <DebugPanel state={gameState} thought={agentThought} />}
           </div>
 
-          <StatusPanel state={gameState} changePulse={notifications.length > 0} />
+          <StatusPanel state={gameState} changeIds={statusChangeIds} />
         </main>
       )}
     </div>

@@ -197,8 +197,7 @@ button:disabled {
   animation: status-text-flash 0.9s ease-out both;
 }
 
-.status-panel-pulse .stat-card,
-.status-panel-pulse section:last-child {
+.status-field-pulse {
   animation: status-panel-pulse 0.85s ease-out both;
 }
 

@@ -1,8 +1,8 @@
-import type { GameState } from '../types/game'
+import type { GameState, StatusField } from '../types/game'
 
 interface StatusPanelProps {
   state: GameState
-  changePulse?: boolean
+  changeIds?: Partial<Record<StatusField, number>>
 }
 
 function affinityText(value: number): string {
@@ -21,13 +21,19 @@ function sectText(flags: Record<string, boolean>): string {
   return '中洲 · 待启灵者'
 }
 
-export function StatusPanel({ state, changePulse = false }: StatusPanelProps) {
+export function StatusPanel({ state, changeIds = {} }: StatusPanelProps) {
   const { player, world, npcs } = state
   const currentLevelStart = (player.realm.minor - 1) * 90
   const progress = Math.max(0, Math.min(100, ((player.cultivation - currentLevelStart) / 90) * 100))
+  const latestChangeId = (...fields: StatusField[]) => Math.max(0, ...fields.map((field) => changeIds[field] ?? 0))
+  const pulseClass = (changeId: number) => changeId > 0 ? 'status-field-pulse' : ''
+  const cultivationChangeId = latestChangeId('cultivation', 'realm')
+  const locationChangeId = latestChangeId('location')
+  const relationChangeId = latestChangeId('relations')
+  const inventoryChangeId = latestChangeId('inventory')
 
   return (
-    <aside className={`space-y-4 ${changePulse ? 'status-panel-pulse' : ''}`}>
+    <aside className="space-y-4">
       <section className="ink-panel rounded-2xl border border-amber-100/15 p-5">
         <div className="mb-5 flex items-center gap-3 border-b border-amber-100/10 pb-4">
           <div className="flex size-11 items-center justify-center rounded-full border border-amber-200/20 bg-amber-100/[0.06] font-serif text-xl text-amber-100">
@@ -40,7 +46,7 @@ export function StatusPanel({ state, changePulse = false }: StatusPanelProps) {
         </div>
 
         <div className="space-y-4 text-sm">
-          <div>
+          <div key={`cultivation-${cultivationChangeId}`} className={pulseClass(cultivationChangeId)}>
             <div className="mb-2 flex items-center justify-between">
               <span className="text-stone-500">境界</span>
               <span className="text-amber-100">
@@ -57,19 +63,27 @@ export function StatusPanel({ state, changePulse = false }: StatusPanelProps) {
           </div>
 
           <dl className="grid grid-cols-2 gap-3">
-            <div className="stat-card">
+            <div key={`spirit-root-${changeIds.spiritRoot ?? 0}`} className={`stat-card ${pulseClass(changeIds.spiritRoot ?? 0)}`}>
               <dt>灵根</dt>
               <dd>{player.spirit_root.type}</dd>
             </div>
-            <div className="stat-card">
+            <div key={`spirit-quality-${changeIds.spiritRootQuality ?? 0}`} className={`stat-card ${pulseClass(changeIds.spiritRootQuality ?? 0)}`}>
               <dt>品质</dt>
               <dd>{player.spirit_root.quality} 等</dd>
             </div>
-            <div className="stat-card">
+            <div key={`strength-${changeIds.strength ?? 0}`} className={`stat-card ${pulseClass(changeIds.strength ?? 0)}`}>
               <dt>力量</dt>
               <dd>{player.attributes.strength}</dd>
             </div>
-            <div className="stat-card">
+            <div key={`agility-${changeIds.agility ?? 0}`} className={`stat-card ${pulseClass(changeIds.agility ?? 0)}`}>
+              <dt>身法</dt>
+              <dd>{player.attributes.agility}</dd>
+            </div>
+            <div key={`intelligence-${changeIds.intelligence ?? 0}`} className={`stat-card ${pulseClass(changeIds.intelligence ?? 0)}`}>
+              <dt>神识</dt>
+              <dd>{player.attributes.intelligence}</dd>
+            </div>
+            <div key={`perception-${changeIds.perception ?? 0}`} className={`stat-card ${pulseClass(changeIds.perception ?? 0)}`}>
               <dt>悟性</dt>
               <dd>{player.attributes.perception}</dd>
             </div>
@@ -78,6 +92,28 @@ export function StatusPanel({ state, changePulse = false }: StatusPanelProps) {
       </section>
 
       <section className="ink-panel rounded-2xl border border-amber-100/15 p-5">
+        <h3 className="mb-4 text-xs tracking-[0.22em] text-amber-100/60">角色资源</h3>
+        <dl className="grid grid-cols-2 gap-3">
+          <div key={`hp-${changeIds.hp ?? 0}`} className={`stat-card ${pulseClass(changeIds.hp ?? 0)}`}>
+            <dt>生命</dt>
+            <dd>{player.hp ?? '—'} / {player.max_hp ?? '—'}</dd>
+          </div>
+          <div key={`mp-${changeIds.mp ?? 0}`} className={`stat-card ${pulseClass(changeIds.mp ?? 0)}`}>
+            <dt>灵力</dt>
+            <dd>{player.mp ?? '—'} / {player.max_mp ?? '—'}</dd>
+          </div>
+          <div key={`stones-${changeIds.spiritStones ?? 0}`} className={`stat-card ${pulseClass(changeIds.spiritStones ?? 0)}`}>
+            <dt>灵石</dt>
+            <dd>{player.spirit_stones}</dd>
+          </div>
+          <div key={`skills-${changeIds.skills ?? 0}`} className={`stat-card ${pulseClass(changeIds.skills ?? 0)}`}>
+            <dt>功法</dt>
+            <dd>{player.skills.length}</dd>
+          </div>
+        </dl>
+      </section>
+
+      <section key={`location-${locationChangeId}`} className={`ink-panel rounded-2xl border border-amber-100/15 p-5 ${pulseClass(locationChangeId)}`}>
         <h3 className="mb-4 text-xs tracking-[0.22em] text-amber-100/60">当前所在</h3>
         <p className="font-serif text-base text-stone-200">{world.current_location}</p>
         <p className="mt-2 text-xs text-stone-500">
@@ -85,7 +121,7 @@ export function StatusPanel({ state, changePulse = false }: StatusPanelProps) {
         </p>
       </section>
 
-      <section className="ink-panel rounded-2xl border border-amber-100/15 p-5">
+      <section key={`relations-${relationChangeId}`} className={`ink-panel rounded-2xl border border-amber-100/15 p-5 ${pulseClass(relationChangeId)}`}>
         <h3 className="mb-4 text-xs tracking-[0.22em] text-amber-100/60">人物关系</h3>
         <div className="space-y-3">
           {Object.values(npcs).map((npc) => (
@@ -108,7 +144,7 @@ export function StatusPanel({ state, changePulse = false }: StatusPanelProps) {
         </div>
       </section>
 
-      <section className="ink-panel rounded-2xl border border-amber-100/15 p-5">
+      <section key={`inventory-${inventoryChangeId}`} className={`ink-panel rounded-2xl border border-amber-100/15 p-5 ${pulseClass(inventoryChangeId)}`}>
         <h3 className="mb-4 text-xs tracking-[0.22em] text-amber-100/60">储物袋</h3>
         {player.inventory.length > 0 ? (
           <div className="space-y-2">
