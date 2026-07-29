@@ -11,6 +11,7 @@ tasks/
 .env.local
 .env.*.local
 !.env.example
+/backend.env
 
 # === Python 虚拟环境 ===
 .venv/

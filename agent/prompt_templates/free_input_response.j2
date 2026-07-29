@@ -19,9 +19,10 @@
 例如："师尊眉头微皱，似是不解你话中之意。" 不要直接说"你出戏了"。
 {% endif %}
 
-【游戏状态】（GameState v1.0）
-玩家：{{ game_state.player.name }}（{{ game_state.player.spiritual_root }}，修为 {{ game_state.player.cultivation }}）
-当前场景：{{ game_state.world.current_scene_id }}
+【游戏状态】
+玩家：{{ game_state.player.name }}（{{ game_state.player.spirit_root.type }}灵根，品质{{ game_state.player.spirit_root.quality }}等，修为 {{ game_state.player.cultivation }}）
+当前场景：{{ game_state.world.current_location }}
+重要：凡提及玩家灵根，必须严格采用以上类型和品质，不得生成其他品级。
 
 【在场 NPC】
 {% for npc_id, npc in npc_cards.items() -%}
