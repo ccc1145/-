@@ -186,6 +186,28 @@ def test_choice_narrative_context_uses_destination_scene():
     assert "测灵石" in result.event_context["scene"]["description"]
 
 
+@pytest.mark.parametrize("sect", ["xuanqing", "shenwu", "fulong", "hongchen"])
+def test_sect_choice_is_exclusive_and_routes_to_matching_trial(sect):
+    engine = GameEngine.from_formal_content(Path(__file__).parents[2] / "content")
+    state = GameState(current_scene_id="00_awakening_selection:sect_selection")
+    state.world.flags.update(
+        {f"sect_chosen_{name}": True for name in ("xuanqing", "shenwu", "fulong", "hongchen")}
+    )
+
+    journey = engine.process_action(state, "choice", f"choose_{sect}")
+    assert journey.state.world.flags[f"sect_chosen_{sect}"] is True
+    assert all(
+        journey.state.world.flags[f"sect_chosen_{other}"] is (other == sect)
+        for other in ("xuanqing", "shenwu", "fulong", "hongchen")
+    )
+
+    arrival = engine.process_action(journey.state, "choice", "arrive_at_gate")
+    assert [choice.id for choice in arrival.available_choices] == [f"begin_{sect}_trial"]
+
+    trial = engine.process_action(arrival.state, "choice", f"begin_{sect}_trial")
+    assert trial.state.current_scene_id.startswith(f"01_{sect}_trial:")
+
+
 def test_xuanqing_heart_trial_exposes_narrative_choices_before_result():
     engine = GameEngine.from_formal_content(Path(__file__).parents[2] / "content")
     state = GameState(current_scene_id="01_xuanqing_trial:heart_trial")

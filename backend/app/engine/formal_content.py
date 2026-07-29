@@ -107,6 +107,16 @@ def load_formal_content(
                     _normalise_effect(effect)
                     for effect in adapted.get("effects", []) or []
                 ]
+                if adapted.get("id", "").startswith("choose_"):
+                    selected_sect = adapted["id"].removeprefix("choose_")
+                    adapted["effects"] = [
+                        {
+                            "type": "set_flag",
+                            "flag": f"sect_chosen_{sect}",
+                            "value": sect == selected_sect,
+                        }
+                        for sect in SECTS
+                    ]
                 choices.append(adapted)
 
             # The authored Xuanqing heart trial is Agent-driven and therefore

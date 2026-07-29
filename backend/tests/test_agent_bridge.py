@@ -79,3 +79,30 @@ def test_choice_prompt_receives_selected_text_and_full_event_context():
     assert "将手放在测灵石上" in captured["current_scene"]["description"]
     assert "前端只会显示以下系统选项" in captured["current_scene"]["description"]
     assert "不得提出上述列表之外" in captured["current_scene"]["description"]
+
+
+def test_selected_sect_is_locked_in_agent_prompt():
+    engine = GameEngine.from_formal_content(Path(__file__).parents[2] / "content")
+    state = GameState(
+        session_id="fulong-prompt-test",
+        current_scene_id="00_awakening_selection:sect_selection",
+    )
+    engine_result = engine.process_action(state, "choice", "choose_fulong")
+    captured = {}
+
+    class CapturingController:
+        def generate_scene_narrative(self, **kwargs):
+            captured.update(kwargs)
+            return {
+                "narrative": "前往扶龙宫",
+                "narrative_segments": [{"type": "narration", "text": "前往扶龙宫"}],
+                "degraded": False,
+            }
+
+    bridge = AgentBridge()
+    bridge.controller = CapturingController()
+    bridge.generate(engine_result, "choice", "choose_fulong")
+
+    description = captured["current_scene"]["description"]
+    assert "宗门锁定：玩家已选择扶龙宫" in description
+    assert "不得把地点、人物、称谓或试炼写成玄清宗" in description

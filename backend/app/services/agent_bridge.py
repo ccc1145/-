@@ -22,6 +22,13 @@ from ai_agent_framework.config.settings import LLMConfig
 
 logger = logging.getLogger(__name__)
 
+SECT_CONTEXTS = {
+    "sect_chosen_xuanqing": ("玄清宗", "清妙山、悬空仙岛、虹桥与紫竹清气"),
+    "sect_chosen_shenwu": ("神武门", "龙陨山脉、玄黑石门、演武声与金铁煞气"),
+    "sect_chosen_fulong": ("扶龙宫", "神都皇城、承运殿、宫苑礼制与王朝气运"),
+    "sect_chosen_hongchen": ("红尘阁", "神都玉带河、百花舫、红尘灯火与隐秘情报网络"),
+}
+
 
 class AgentBridge:
     def __init__(self, provider: Callable[[dict[str, Any]], dict[str, Any]] | None = None):
@@ -107,10 +114,27 @@ class AgentBridge:
                     "叙事若引导玩家进行下一步，只能逐字使用上述选项，"
                     "不得提出上述列表之外的二选一、多选或行动建议。"
                 )
+            sect_boundary = ""
+            selected_sects = [
+                details
+                for flag, details in SECT_CONTEXTS.items()
+                if state.world.flags.get(flag, False)
+            ]
+            if selected_sects:
+                sect_name, sect_setting = selected_sects[-1]
+                other_sects = "、".join(
+                    name for name, _ in SECT_CONTEXTS.values() if name != sect_name
+                )
+                sect_boundary = (
+                    f"\n宗门锁定：玩家已选择{sect_name}。当前及后续叙事必须使用"
+                    f"{sect_name}设定（{sect_setting}），不得把地点、人物、称谓或试炼"
+                    f"写成{other_sects}。"
+                )
             current_scene = {
                 "id": state.current_scene_id,
                 "name": scene_data.get("name", state.world.current_location),
                 "description": scene_data.get("description", state.world.current_location)
+                + sect_boundary
                 + narrative_boundary,
                 "mood": scene_data.get("mood", ""),
             }
